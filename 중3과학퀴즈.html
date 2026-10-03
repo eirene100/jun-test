@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*{box-sizing:border-box}[hidden]{display:none!important}</style>
+<title>중3 과학 중간고사 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen flashcard app — top filter bar, one flip card filling the middle, fixed nav bar at the bottom */
+:root{
+  --bg:#E9EDF2; --card:#FFFFFF; --ink:#1B2430; --muted:#5D6878; --line:#D3D9E1;
+  --lp:#C2552D; --lc2:#2F6FB0; --lg:#13857A;
+  --ok:#1F8A4C; --again:#C2410C; --back:#F6F8FB;
+  --font-ui:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-en:"Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.55;margin:0;word-break:keep-all;overflow-wrap:anywhere}
+.app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding-inline:16px;box-sizing:border-box}
+header{padding-block:12px 8px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.count b{color:var(--ink);font-size:16px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 14px var(--font-ui);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip:focus-visible,.navbtn:focus-visible,.mark:focus-visible,.stage:focus-visible{outline:3px solid var(--lg);outline-offset:2px}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);width:0;transition:width .25s}
+
+.stage{flex:1;min-height:0;perspective:1400px;position:relative;margin-block:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:18px}
+.flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.stage.flipped .flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;border:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column;box-sizing:border-box;padding:20px 20px 18px}
+.front{background:var(--card)}
+.back{background:var(--back);transform:rotateY(180deg)}
+.face::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--lc);border-radius:18px 0 0 18px}
+.meta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.lesson{color:var(--lc);font-weight:700;letter-spacing:.04em}
+.tag{border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-weight:500}
+.done{margin-left:auto;font-weight:500}
+.done.ok{color:var(--ok)} .done.again{color:var(--again)}
+.q{font-size:18px;font-weight:500;margin:16px 0 0;text-wrap:pretty}
+.en{font-family:var(--font-en);font-size:17px;line-height:1.6;background:var(--back);border-radius:10px;padding:12px 14px;margin:12px 0 0;white-space:pre-line}
+.back .en{background:var(--card)}
+.opts{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:8px}
+.opts li{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-family:var(--font-ui);font-size:16px;line-height:1.45}
+.opts li span{font-family:var(--font-ui);font-weight:700;color:var(--muted);flex:none}
+.hint{margin-top:auto;padding-top:16px;text-align:center;font-size:13px;color:var(--muted)}
+.alabel{font-size:13px;font-weight:700;color:var(--lc);letter-spacing:.06em;margin-top:16px}
+.answer{font-family:var(--font-ui);font-size:20px;font-weight:700;line-height:1.35;margin:4px 0 0;text-wrap:balance}
+.ex{margin:14px 0 0;font-size:15.5px;line-height:1.65;text-wrap:pretty}
+.ex em{font-style:normal;font-family:var(--font-en);font-weight:700}
+.marks{display:flex;gap:8px;margin-top:auto;padding-top:16px}
+.mark{flex:1;border:1.5px solid currentColor;background:transparent;border-radius:12px;padding:11px 8px;font:700 15px var(--font-ui);cursor:pointer}
+.mark.ok{color:var(--ok)} .mark.again{color:var(--again)}
+
+nav{display:flex;gap:10px;padding-block:6px calc(12px + env(safe-area-inset-bottom,0px))}
+.navbtn{flex:1;border:none;border-radius:14px;padding:14px 8px;font:700 16px var(--font-ui);cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.navbtn.main{flex:1.4;background:var(--ink);color:var(--card);border-color:var(--ink)}
+.navbtn:disabled{opacity:.4;cursor:default}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:24px}
+@media (prefers-reduced-motion: reduce){.flip{transition:none}.bar i{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <h1>중3 과학 중간고사 퀴즈</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="chips" role="group" aria-label="범위 선택">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">전체 50</button>
+      <button class="chip" id="f-r" data-f="r" aria-pressed="false">생식과 유전</button>
+      <button class="chip" id="f-e" data-f="e" aria-pressed="false">에너지</button>
+      <button class="chip" id="f-s" data-f="s" aria-pressed="false">별과 우주</button>
+      <button class="chip" id="f-again" data-f="again" aria-pressed="false">다시 볼 문제</button>
+      <button class="chip" id="shuffle" aria-pressed="false">섞기</button>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </header>
+
+  <div class="stage" id="stage" tabindex="0" role="button" aria-label="카드를 눌러 정답 보기">
+    <div class="flip">
+      <section class="face front" id="front"></section>
+      <section class="face back" id="back"></section>
+    </div>
+  </div>
+
+  <nav>
+    <button class="navbtn" id="prev">◀ 이전</button>
+    <button class="navbtn main" id="flipbtn">정답 보기</button>
+    <button class="navbtn" id="next">다음 ▶</button>
+  </nav>
+</div>
+
+<script>
+const L = {r:"생식과 유전 · 180~227쪽", e:"에너지 전환과 보존 · 230~251쪽", s:"별과 우주 · 252~283쪽"};
+const UL = {r:"생식·유전", e:"에너지", s:"별·우주"};
+const Q = [
+/* ---------- 생식과 유전 ---------- */
+{u:"r",t:"빈칸",q:"빈칸에 알맞은 말은?",en:"염색체는 유전 물질인 ( ㉠ )와/과 단백질로 이루어져 있고, ( ㉠ )에 저장된 각각의 유전 정보를 ( ㉡ )(이)라고 한다.",a:"㉠ DNA  ㉡ 유전자",ex:"DNA는 두 가닥이 꼬인 <b>이중 나선</b> 구조입니다. 핵 속에서 실처럼 풀어진 <b>염색사</b>가 세포 분열 때 굵고 짧게 뭉쳐 막대 모양의 <b>염색체</b>가 됩니다. 염색체를 이루는 두 가닥 각각은 <b>염색 분체</b>입니다. (182쪽)"},
+{u:"r",t:"개념",q:"‘상동 염색체’란?",a:"모양과 크기가 같은 한 쌍의 염색체 (하나는 어머니, 하나는 아버지에게서 물려받음)",ex:"사람은 46개, 즉 23쌍의 염색체를 가집니다. (183쪽)"},
+{u:"r",t:"빈칸",q:"사람의 염색체 구성을 쓰세요.",en:"상염색체 (   )개 + 성염색체 2개\n여자: 44 + (   )   남자: 44 + (   )",a:"44개 / 여자 44+XX / 남자 44+XY",ex:"상염색체는 남녀 공통, 성염색체는 남녀에 따라 다릅니다. 참고: 침팬지 48개, 완두 14개. (183쪽)"},
+{u:"r",t:"개념",q:"세포가 계속 커지지 않고 일정 크기가 되면 분열하는 까닭은?",a:"세포가 커지면 부피에 비해 표면적이 상대적으로 작아져 물질 교환이 어려워지기 때문",ex:"우무 실험: 큰 덩어리는 색소가 중심까지 스며들지 않았습니다. 작은 세포일수록 <b>부피당 표면적</b>이 넓어 물질 이동에 유리합니다. (184~185쪽)"},
+{u:"r",t:"순서",q:"체세포 분열 핵분열 단계를 순서대로 쓰고, 염색체가 세포 중앙에 배열되는 시기를 고르세요.",a:"전기 → 중기 → 후기 → 말기 / 중앙 배열: 중기",ex:"<b>전기</b>: 염색사가 염색체로 응축, 핵막이 사라지고 방추사 형성. <b>중기</b>: 염색체가 중앙에 배열. <b>후기</b>: 염색 분체가 양극으로 이동. <b>말기</b>: 핵막이 다시 생기고 세포질 분열 시작. 분열 전 <b>간기</b>에 DNA가 복제됩니다. (188~189쪽)"},
+{u:"r",t:"선택",q:"체세포 분열이 일어나는 경우가 <b>아닌</b> 것은?",opts:["식물 조직의 생장","도마뱀 꼬리의 재생","아메바의 번식","정자와 난자의 형성"],a:"④ 정자와 난자의 형성",ex:"정자와 난자는 <b>생식세포 분열(감수 분열)</b>로 만들어집니다. 체세포 분열은 생장, 재생, 단세포 생물의 번식 때 일어나며 딸세포는 모세포와 <b>같은 유전 정보</b>를 가집니다. (189쪽)"},
+{u:"r",t:"비교",q:"체세포 분열과 생식세포 분열을 비교하세요. (분열 횟수, 2가 염색체, 딸세포 수, 염색체 수)",a:"체세포: 1회, 2가 염색체 없음, 딸세포 2개, 염색체 수 그대로 / 생식세포: 연속 2회, 2가 염색체 있음, 딸세포 4개, 염색체 수 절반",ex:"생식세포 분열은 감수 1분열 + 감수 2분열로 이루어집니다. (195, 201쪽)"},
+{u:"r",t:"개념",q:"‘2가 염색체’란 무엇이고, 언제 나타나나요?",a:"상동 염색체끼리 짝을 지어 결합한 것 / 감수 1분열 전기",ex:"중기에 2가 염색체가 중앙에 나란히 정렬하고, 후기에 상동 염색체가 분리됩니다. 체세포 분열에서는 나타나지 않습니다. (192쪽)"},
+{u:"r",t:"선택",q:"생식세포 분열에서 염색체 수가 절반으로 줄어드는 시기는?",opts:["간기","감수 1분열","감수 2분열","세포질 분열이 끝난 뒤"],a:"② 감수 1분열",ex:"감수 1분열에서 <b>상동 염색체가 분리</b>되므로 염색체 수가 반으로 줄어듭니다. 감수 2분열은 DNA 복제 없이 <b>염색 분체가 분리</b>되는 과정이라 수가 더 줄지 않습니다. (192~193쪽)"},
+{u:"r",t:"개념",q:"생식세포의 염색체 수가 모세포의 절반이어야 하는 까닭은?",a:"암수 생식세포가 수정해도 자손의 염색체 수가 부모와 같게 유지되도록",ex:"부모가 46개를 그대로 물려주면 자식은 92개가 됩니다. 절반씩 받아야 세대를 거듭해도 염색체 수가 일정합니다. (190, 193쪽)"},
+{u:"r",t:"개념",q:"‘난할’이란? 체세포 분열과 다른 점은?",a:"수정란의 초기 세포 분열 / 딸세포가 커지는 시기 없이 분열을 반복해 세포 수는 늘지만 세포 하나하나는 작아짐",ex:"분열을 거듭해도 전체 크기는 수정란과 거의 같습니다. (197쪽)"},
+{u:"r",t:"순서",q:"수정에서 출산까지의 과정을 순서대로 쓰세요.",a:"배란 → 수정(수란관) → 난할 → 포배 → 착상(자궁 내막) → 태반 형성 → 출산(수정 후 약 266일)",ex:"수정 후 5~7일 뒤 속이 빈 공 모양의 <b>포배</b>가 되어 자궁 내막에 파고드는 것이 <b>착상</b>입니다. 태아는 <b>태반</b>을 통해 산소와 영양소를 받고, 이산화 탄소와 노폐물을 모체로 내보냅니다. (197~198쪽)"},
+{u:"r",t:"개념",q:"멘델이 유전 실험 재료로 완두를 쓴 까닭을 두 가지 이상 쓰세요.",a:"재배가 쉽고 한 세대가 짧다 / 자손 수가 많아 통계 분석에 유리하다 / 대립 형질이 뚜렷하다 / 자가 수분과 타가 수분이 모두 가능하다",ex:"‘둥글다–주름지다’처럼 한 형질에 대해 뚜렷하게 대비되는 특징을 <b>대립 형질</b>이라 합니다. (203~204쪽)"},
+{u:"r",t:"개념",q:"표현형과 유전자형의 차이는? 순종과 잡종은?",a:"표현형: 겉으로 드러난 형질(둥글다) / 유전자형: 유전자 조합의 기호(RR, Rr, rr)",ex:"RR, rr처럼 두 유전자가 같으면 <b>순종</b>, Rr처럼 다르면 <b>잡종</b>입니다. (205쪽)"},
+{u:"r",t:"개념",q:"‘우열의 원리’란?",a:"순종의 대립 형질끼리 교배하면 잡종 1대에서 우성 형질만 나타나는 현상",ex:"순종 둥근 완두(RR) × 순종 주름진 완두(rr) → 잡종 1대 모두 Rr(둥근 완두). 우성은 ‘우수하다’는 뜻이 아니라 잡종 1대에서 나타나는 형질이라는 뜻입니다. (206쪽)"},
+{u:"r",t:"계산",q:"잡종 1대 둥근 완두(Rr)를 자가 수분했을 때, 잡종 2대의 유전자형의 비와 표현형의 비는?",a:"유전자형 RR : Rr : rr = 1 : 2 : 1 / 표현형 둥근 : 주름진 = 3 : 1",ex:"이것이 <b>분리의 법칙</b>입니다. 생식세포를 만들 때 대립유전자 R와 r가 서로 다른 생식세포로 나뉘어 들어가, 잡종 1대에서 숨어 있던 열성 형질이 잡종 2대에서 다시 나타납니다. (209쪽)"},
+{u:"r",t:"계산",q:"RrYy인 완두를 자가 수분하면 잡종 2대의 표현형 비는? 이 완두가 만드는 생식세포는 몇 종류?",a:"둥글고 황색 : 둥글고 녹색 : 주름지고 황색 : 주름지고 녹색 = 9 : 3 : 3 : 1 / 생식세포 4종류(RY, Ry, rY, ry)",ex:"모양만 보면 3 : 1, 색깔만 보아도 3 : 1입니다. 두 유전자가 서로 다른 염색체에 있어 서로 영향을 주지 않고 따로 유전되는 것을 <b>독립의 법칙</b>이라 합니다. (211~212쪽)"},
+{u:"r",t:"개념",q:"사람의 유전 연구가 어려운 까닭과, 대신 쓰는 연구 방법은?",a:"형질이 많고 환경 영향을 받음, 자손 수가 적음, 세대가 길고, 마음대로 교배할 수 없음 / 쌍둥이 연구, 가계도 분석, 통계 조사, 염색체와 유전자 조사",ex:"1란성 쌍둥이는 유전자가 같아서 차이가 나면 <b>환경</b>의 영향입니다. 예: 함께 자란 세 쌍둥이 중 씨름 선수가 된 한 명만 몸무게가 크게 달랐다 → 몸무게는 환경 영향이 큼. (213~215쪽)"},
+{u:"r",t:"계산",q:"미맹(PTC 쓴맛을 못 느낌)은 열성이다. 쓴맛을 느끼는 사람의 유전자형과 미맹인 사람의 유전자형은? 남녀 차이가 있을까?",a:"쓴맛 느낌: AA 또는 Aa / 미맹: aa / 상염색체 유전이라 남녀 차이 없음",ex:"미맹은 우열의 원리와 분리의 법칙을 잘 따르는 형질입니다. (217~218쪽)"},
+{u:"r",t:"계산",q:"A형 아버지와 B형 어머니 사이에서 O형 자녀가 태어날 수 있는 까닭은?",a:"아버지가 AO, 어머니가 BO일 때 각각 O를 물려주면 OO(O형)가 되기 때문",ex:"ABO식 혈액형: 대립유전자 A, B, O 세 가지. A와 B는 O에 대해 우성이고, A와 B 사이에는 우열이 없어 AB면 AB형입니다. (219쪽)"},
+{u:"r",t:"개념",q:"적록 색맹이 여자보다 남자에게 많이 나타나는 까닭은?",a:"색맹 유전자가 X 염색체에 있는 열성 유전자라, X가 하나인 남자는 하나만 받아도 색맹이 되기 때문",ex:"여자는 X 두 개 모두에 색맹 유전자가 있어야 색맹입니다. XX′인 여자는 정상이지만 색맹 유전자를 물려줄 수 있습니다. 성염색체에 유전자가 있어 남녀에 따라 나타나는 비율이 다른 유전을 <b>반성 유전</b>이라 하며, <b>혈우병</b>도 같은 방식입니다. (220~221쪽)"},
+
+/* ---------- 에너지 전환과 보존 ---------- */
+{u:"e",t:"개념",q:"역학적 에너지란? 롤러코스터가 내려갈 때 일어나는 에너지 전환은?",a:"위치 에너지 + 운동 에너지 / 위치 에너지 → 운동 에너지",ex:"올라갈 때는 반대로 운동 에너지가 위치 에너지로 바뀝니다. 가장 낮은 지점에서 운동 에너지가 최대입니다. (231쪽)"},
+{u:"e",t:"개념",q:"‘역학적 에너지 보존 법칙’이란?",a:"공기 저항과 마찰을 무시하면 위치 에너지와 운동 에너지의 합이 항상 일정하게 보존된다",ex:"위로 던진 공은 증가한 위치 에너지 = 감소한 운동 에너지, 자유 낙하하는 물체는 감소한 위치 에너지 = 증가한 운동 에너지입니다. (233쪽)"},
+{u:"e",t:"계산",q:"높이 10 m에서 질량 4 kg인 물체를 가만히 놓았다. 높이 5 m 지점에서의 운동 에너지는? (공기 저항 무시)",en:"위치 에너지 = 9.8 × 질량 × 높이",a:"196 J",ex:"처음 역학적 에너지 = 9.8 × 4 × 10 = 392 J. 5 m 지점의 위치 에너지 = 9.8 × 4 × 5 = 196 J. 운동 에너지 = 392 − 196 = <b>196 J</b>. 지면에 닿는 순간 운동 에너지는 392 J입니다. (248쪽)"},
+{u:"e",t:"연결",q:"에너지 종류와 설명을 연결하세요.",en:"(1) 진동이 공기를 통해 전달되는 파동\n(2) 음식물·연료·전지 속에 저장된 에너지\n(3) 온도가 높은 곳에서 낮은 곳으로 이동하는 에너지",a:"(1) 소리 에너지 (2) 화학 에너지 (3) 열에너지",ex:"이 밖에 빛에너지, 전기 에너지, 운동·위치 에너지가 있습니다. (234쪽)"},
+{u:"e",t:"연결",q:"에너지 전환을 바르게 쓰세요.",en:"(1) 광합성   (2) 모닥불   (3) 풍력 발전   (4) 마이크",a:"(1) 빛 → 화학 (2) 화학 → 빛·열 (3) 운동 → 전기 (4) 소리 → 전기",ex:"한 종류의 에너지가 다른 종류로 변하는 것을 <b>에너지 전환</b>이라 합니다. (235~236쪽)"},
+{u:"e",t:"개념",q:"‘에너지 보존 법칙’이란? 그런데도 에너지를 아껴야 하는 까닭은?",a:"에너지가 전환될 때 새로 생기거나 사라지지 않고 총량이 항상 일정하다 / 전환될 때 다시 쓰기 어려운 열 등으로 바뀌어 쓸 수 있는 에너지는 줄어들기 때문",ex:"예: 헤어드라이어에 공급된 전기 에너지 = 열 + 공기의 운동 + 소리 에너지의 합. 자동차 연료의 화학 에너지 100%도 운동·열·소리·배기가스 에너지로 나뉠 뿐 합은 100%입니다. (235~236쪽)"},
+{u:"e",t:"개념",q:"‘전자기 유도’와 ‘유도 전류’란?",a:"코일 근처에서 자석이 움직여 코일을 지나는 자기장이 변할 때 코일에 전류가 흐르는 현상 / 그때 흐르는 전류",ex:"자석이 가만히 있으면 전류가 흐르지 않습니다. 자석의 <b>역학적 에너지 → 전기 에너지</b>로 전환됩니다. (240쪽)"},
+{u:"e",t:"선택",q:"유도 전류를 더 세게 만드는 방법이 <b>아닌</b> 것은?",opts:["자석을 더 빠르게 움직인다","더 센 자석을 쓴다","코일을 더 많이 감는다","자석을 코일 안에 가만히 둔다"],a:"④",ex:"유도 전류는 자석이 <b>빠를수록, 셀수록, 코일 감은 수가 많을수록</b> 커집니다. 자석이 멈춰 있으면 전류가 흐르지 않습니다. (250쪽)"},
+{u:"e",t:"개념",q:"발전기의 구조와 원리는?",a:"영구 자석과 그 속에서 회전하는 코일 / 코일이 회전하면 전자기 유도로 전류가 흐른다",ex:"전자기 유도를 이용한 대표적인 예가 발전기입니다. 바퀴에 불이 들어오는 킥보드, 손 발전기 플래시도 같은 원리입니다. (240쪽)"},
+{u:"e",t:"연결",q:"가전제품에서 전기 에너지가 주로 바뀌는 에너지를 쓰세요.",en:"(1) 전기밥솥   (2) 세탁기   (3) 스피커   (4) 스탠드   (5) 배터리 충전",a:"(1) 열 (2) 운동 (3) 소리 (4) 빛 (5) 화학",ex:"텔레비전처럼 빛·소리·열 에너지로 동시에 전환되는 제품도 있습니다. (243쪽)"},
+{u:"e",t:"개념",q:"소비 전력 1200 W인 전열기의 의미는?",a:"1초 동안 1200 J의 전기 에너지를 소모한다",ex:"<b>소비 전력</b>: 1초 동안 소모하는 전기 에너지의 양, 단위 W(와트). 1 W = 1초에 1 J. (244쪽)"},
+{u:"e",t:"계산",q:"소비 전력 100 W인 전구를 하루 5시간씩 사용했을 때 하루 전력량은?",en:"전력량(Wh) = 소비 전력(W) × 시간(h)",a:"500 Wh (= 0.5 kWh)",ex:"<b>전력량</b>은 일정 시간 동안 소모한 전기 에너지의 양으로, 단위는 Wh 또는 kWh입니다. 가정의 전기 요금은 전력량계로 잰 <b>kWh</b>를 기준으로 냅니다. 소비 전력(W)과 단위를 헷갈리지 마세요. (244쪽)"},
+{u:"e",t:"O / X",q:"맞으면 O, 틀리면 X",en:"전기 주전자는 전기 에너지를 주로 화학 에너지로 전환한다.",a:"X",ex:"전기 주전자는 전기 에너지를 주로 <b>열에너지</b>로 전환합니다. 화학 에너지로 바꾸는 예는 <b>배터리 충전</b>입니다. (243, 247쪽)"},
+
+/* ---------- 별과 우주 ---------- */
+{u:"s",t:"개념",q:"시차와 물체까지의 거리는 어떤 관계인가요?",a:"반비례 (가까울수록 시차가 크다)",ex:"<b>시차</b>: 관측자의 위치에 따라 물체의 겉보기 방향이 달라지는 정도. 기차 창밖의 가까운 집이 먼 산보다 빨리 지나가 보이는 것과 같습니다. (255~257쪽)"},
+{u:"s",t:"개념",q:"‘연주 시차’란?",a:"6개월 간격으로 지구에서 측정한 별의 시차의 1/2",ex:"지구가 공전하며 태양 반대편으로 옮겨 가기 때문에 생깁니다. 먼 별일수록 연주 시차가 작습니다. 연주 시차는 비교적 <b>가까운 별</b>의 거리를 구할 때만 쓸 수 있습니다. (257~258쪽)"},
+{u:"s",t:"빈칸",q:"빈칸에 알맞은 말은?",en:"연주 시차가 1″인 별까지의 거리를 1 ( ㉠ )(이)라고 하며, 이는 약 ( ㉡ ) 광년이다.",a:"㉠ 파섹(pc)  ㉡ 3.26",ex:"1 pc ≒ 3.26 LY ≒ 3×10¹³ km. 1 광년은 빛이 1년 동안 가는 거리. 태양 다음으로 가까운 별 <b>프록시마 센타우리</b>: 연주 시차 약 0.77″, 거리 약 1.3 pc. (258쪽)"},
+{u:"s",t:"계산",q:"연주 시차가 0.1″인 별까지의 거리는?",a:"10 pc",ex:"거리(pc) = 1 ÷ 연주 시차(″). 0.1″ → 10 pc, 0.5″ → 2 pc. 10 pc은 약 32.6 광년이며, <b>절대 등급</b>의 기준 거리입니다. (258, 261쪽)"},
+{u:"s",t:"개념",q:"빛의 밝기와 거리의 관계는? 거리가 3배가 되면 밝기는?",a:"밝기는 거리의 제곱에 반비례 / 1/9배",ex:"거리 2배 → 1/4배, 3배 → 1/9배. (260쪽)"},
+{u:"s",t:"계산",q:"1등급 별은 6등급 별보다 몇 배 밝은가요? 1등급 차이는 약 몇 배?",a:"100배 / 약 2.5배",ex:"등급 수치가 <b>작을수록 밝습니다</b>. 북극성 약 +2.1등급, 가장 밝은 별 시리우스 약 −1.5등급, 태양 약 −26.8등급. (260쪽)"},
+{u:"s",t:"비교",q:"겉보기 등급과 절대 등급의 차이는?",a:"겉보기 등급: 지구에서 눈에 보이는 밝기 / 절대 등급: 별이 10 pc 거리에 있다고 가정한 밝기(실제 밝기 비교)",ex:"태양은 겉보기 등급 −26.8로 가장 밝게 보이지만 절대 등급은 +4.8이라 실제로는 그렇게 밝은 별이 아닙니다. (260~261쪽)"},
+{u:"s",t:"선택",q:"표를 보고 고르세요. 실제로 가장 밝은 별은?",en:"시리우스: 겉보기 −1.5, 절대 +1.4\n직녀성: 겉보기 +0.0, 절대 +0.5\n리겔: 겉보기 +0.1, 절대 −6.8",opts:["시리우스","직녀성","리겔"],a:"③ 리겔",ex:"실제 밝기는 <b>절대 등급</b>으로 비교합니다. 가장 밝게 <b>보이는</b> 별은 겉보기 등급이 가장 작은 시리우스입니다. 겉보기 등급 > 절대 등급이면 10 pc보다 <b>먼</b> 별(리겔), 겉보기 < 절대면 <b>가까운</b> 별(시리우스, 직녀성)입니다. (261쪽)"},
+{u:"s",t:"순서",q:"별의 색을 표면 온도가 높은 것부터 순서대로 쓰세요.",a:"청색 → 청백색 → 백색 → 황백색 → 황색 → 주황색 → 적색",ex:"표면 온도가 낮을수록 붉고, 높을수록 푸릅니다. 예: 오리온자리의 <b>베텔게우스(적색)</b>는 <b>리겔(청백색)</b>보다 온도가 낮습니다. 태양은 황색 별입니다. (262~263쪽)"},
+{u:"s",t:"개념",q:"우리은하의 모양과 크기, 태양계의 위치를 쓰세요.",a:"위에서 보면 막대 모양 중심부 + 나선팔, 옆에서 보면 중심이 부푼 납작한 원반 / 지름 약 30 kpc, 별 약 2000억 개 / 태양계는 중심에서 약 8.5 kpc 떨어진 나선팔",ex:"지구에서 보면 우리은하가 띠 모양의 <b>은하수</b>로 보이고, 은하 중심 방향인 <b>궁수자리</b> 쪽이 가장 넓고 밝습니다. (265쪽)"},
+{u:"s",t:"비교",q:"산개 성단과 구상 성단을 비교하세요.",a:"산개: 수십~수만 개, 일정한 모양 없음, 주로 푸른색(고온) 별, 나선팔에 분포 / 구상: 수만~수십만 개, 공 모양, 주로 붉은색 별, 은하 중심부와 원반을 둘러싼 구형 공간에 분포",ex:"예: 플레이아데스 성단(M45)은 산개 성단, M4는 구상 성단입니다. (266쪽)"},
+{u:"s",t:"연결",q:"성운의 종류와 특징을 연결하세요.",en:"(1) 근처 별의 에너지를 받아 붉은빛을 냄\n(2) 주변 별빛을 반사해 파랗게 보임\n(3) 뒤쪽 별빛을 가려 검게 보임",a:"(1) 방출 성운 (2) 반사 성운 (3) 암흑 성운",ex:"성운은 별 사이의 <b>성간 물질</b>(기체와 먼지)이 모여 구름처럼 보이는 것입니다. 은하수 가운데가 검게 보이는 것은 암흑 성운 때문입니다. (267쪽)"},
+{u:"s",t:"개념",q:"허블이 발견한 두 가지 사실은?",a:"안드로메다은하가 외부 은하라는 것 / 멀리 있는 외부 은하들이 우리은하에서 멀어지고 있다는 것(우주 팽창)",ex:"윌슨산 천문대의 2.5 m 망원경으로 관측했습니다. (271쪽)"},
+{u:"s",t:"O / X",q:"맞으면 O, 틀리면 X",en:"우주는 우리은하를 중심으로 팽창하고 있다.",a:"X",ex:"우주는 <b>특별한 중심 없이</b> 모든 방향으로 균일하게 팽창합니다. 풍선 모형에서 풍선 표면은 <b>우주 공간</b>, 스티커는 <b>은하</b>에 해당하며, 어느 스티커에서 보아도 다른 스티커가 멀어집니다. (272~273쪽)"},
+{u:"s",t:"개념",q:"‘대폭발 우주론(빅뱅 우주론)’이란?",a:"아주 먼 과거에 모든 물질과 에너지가 모인 한 점에서 대폭발로 시작된 우주가 팽창하여 지금의 우주가 되었다는 이론",ex:"과거의 우주는 지금보다 크기가 작고 <b>온도가 높았습니다</b>. (273쪽)"},
+{u:"s",t:"순서",q:"우주 탐사 사건을 시간 순서대로 나열하세요.",en:"ㄱ. 아폴로 11호 달 착륙\nㄴ. 최초의 인공위성 스푸트니크 1호 발사\nㄷ. 큐리오시티 화성 착륙\nㄹ. 허블 우주 망원경 발사",a:"ㄴ(1957) → ㄱ(1969) → ㄹ(1990) → ㄷ(2012)",ex:"1960년대 달 탐사, 1970년대 행성 탐사, 1990년대 이후 소행성·혜성 등으로 탐사 대상이 넓어졌습니다. 2015년 뉴호라이즌스호 명왕성 근접 통과, 2018년 파커 탐사선 태양 대기권 진입. (276~277쪽)"},
+];
+
+const stage=document.getElementById('stage'),front=document.getElementById('front'),back=document.getElementById('back');
+const countEl=document.getElementById('count'),barEl=document.getElementById('bar');
+const prevB=document.getElementById('prev'),nextB=document.getElementById('next'),flipB=document.getElementById('flipbtn');
+Q.forEach((q,i)=>q.id=i+1);
+
+let marks={};
+try{marks=JSON.parse(localStorage.getItem('sci3-mid-marks')||'{}')||{}}catch(e){marks={}}
+function saveMarks(){try{localStorage.setItem('sci3-mid-marks',JSON.stringify(marks))}catch(e){}}
+
+let filter='all',list=Q.slice(),idx=0,shuffled=false;
+const lc=u=>({r:'var(--lp)',e:'var(--lc2)',s:'var(--lg)'})[u];
+
+function build(){
+  if(filter==='all')list=Q.slice();
+  else if(filter==='again')list=Q.filter(q=>marks[q.id]==='again');
+  else list=Q.filter(q=>String(q.u)===filter);
+  if(shuffled){for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}}
+  idx=0;render();
+}
+function metaHTML(q){
+  const m=marks[q.id];
+  const done=m==='ok'?'<span class="done ok">✓ 맞음</span>':m==='again'?'<span class="done again">↺ 다시 볼 문제</span>':'';
+  return `<div class="meta"><span class="lesson">${UL[q.u]}</span><span class="tag">${q.t}</span><span>${q.id}번</span>${done}</div>`;
+}
+function fmtA(a){return a.replace(/\s+(?=\([0-9]\)|㉡|㉢)/g,'<br>').replace(/\s\/\s/g,'<br>')}
+function render(){
+  stage.classList.remove('flipped');flipB.textContent='정답 보기';
+  const n=list.length;
+  if(!n){
+    front.style.setProperty('--lc','var(--line)');back.style.setProperty('--lc','var(--line)');
+    front.innerHTML='<div class="empty">다시 볼 문제가 아직 없습니다.<br>카드 뒷면에서 “다시 볼래요”를 누르면 여기에 모입니다.</div>';
+    back.innerHTML='';countEl.innerHTML='<b>0</b> / 0';barEl.style.width='0';
+    prevB.disabled=nextB.disabled=flipB.disabled=true;return;
+  }
+  flipB.disabled=false;
+  const q=list[idx];
+  front.style.setProperty('--lc',lc(q.u));back.style.setProperty('--lc',lc(q.u));
+  const opts=q.opts?`<ol class="opts">${q.opts.map((o,i)=>`<li><span>${'①②③④⑤'[i]}</span>${o}</li>`).join('')}</ol>`:'';
+  const en=q.en?`<div class="en">${q.en}</div>`:'';
+  front.innerHTML=`${metaHTML(q)}<p class="q">${q.q}</p>${en}${opts}<div class="hint">카드를 누르면 정답이 나와요 · 옆으로 밀면 다음 문제</div>`;
+  back.innerHTML=`${metaHTML(q)}<div class="alabel">정답</div><p class="answer">${fmtA(q.a)}</p><p class="ex">${q.ex}</p>
+    <div class="marks"><button class="mark again" id="m-again" data-m="again">↺ 다시 볼래요</button><button class="mark ok" id="m-ok" data-m="ok">✓ 맞았어요</button></div>`;
+  front.scrollTop=0;back.scrollTop=0;
+  countEl.innerHTML=`<b>${idx+1}</b> / ${n}`;
+  barEl.style.width=((idx+1)/n*100)+'%';
+  prevB.disabled=idx===0;nextB.disabled=idx===n-1;
+}
+function flip(){if(!list.length)return;const f=stage.classList.toggle('flipped');flipB.textContent=f?'문제 보기':'정답 보기'}
+function go(d){const j=idx+d;if(j<0||j>=list.length)return;idx=j;render()}
+
+stage.addEventListener('click',e=>{
+  const m=e.target.closest('.mark');
+  if(m){e.stopPropagation();const q=list[idx];marks[q.id]=m.dataset.m;saveMarks();
+    if(filter==='again'&&m.dataset.m==='ok'){const keep=idx;list=Q.filter(x=>marks[x.id]==='again');idx=Math.min(keep,Math.max(list.length-1,0));render();return}
+    if(idx<list.length-1)go(1);else render();return}
+  flip();
+});
+stage.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();flip()}});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+flipB.onclick=flip;prevB.onclick=()=>go(-1);nextB.onclick=()=>go(1);
+
+let sx=0,sy=0;
+stage.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){go(dx<0?1:-1)}},{passive:true});
+
+document.querySelectorAll('.chip[data-f]').forEach(c=>c.onclick=()=>{
+  filter=c.dataset.f;document.querySelectorAll('.chip[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===c));build()});
+document.getElementById('shuffle').onclick=function(){shuffled=!shuffled;this.setAttribute('aria-pressed',shuffled);this.textContent=shuffled?'섞음 ✓':'섞기';build()};
+
+build();
+</script>
+
+</body>
+</html>

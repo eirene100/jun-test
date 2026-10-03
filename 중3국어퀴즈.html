@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*{box-sizing:border-box}[hidden]{display:none!important}</style>
+<title>중3 국어 중간고사 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen flashcard app — top filter bar, one flip card filling the middle, fixed nav bar at the bottom */
+:root{
+  --bg:#E9EDF2; --card:#FFFFFF; --ink:#1B2430; --muted:#5D6878; --line:#D3D9E1;
+  --lp:#C2552D; --lc2:#2F6FB0; --lg:#13857A;
+  --ok:#1F8A4C; --again:#C2410C; --back:#F6F8FB;
+  --font-ui:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-en:"Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.55;margin:0;word-break:keep-all;overflow-wrap:anywhere}
+.app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding-inline:16px;box-sizing:border-box}
+header{padding-block:12px 8px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.count b{color:var(--ink);font-size:16px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 14px var(--font-ui);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip:focus-visible,.navbtn:focus-visible,.mark:focus-visible,.stage:focus-visible{outline:3px solid var(--lg);outline-offset:2px}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);width:0;transition:width .25s}
+
+.stage{flex:1;min-height:0;perspective:1400px;position:relative;margin-block:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:18px}
+.flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.stage.flipped .flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;border:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column;box-sizing:border-box;padding:20px 20px 18px}
+.front{background:var(--card)}
+.back{background:var(--back);transform:rotateY(180deg)}
+.face::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--lc);border-radius:18px 0 0 18px}
+.meta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.lesson{color:var(--lc);font-weight:700;letter-spacing:.04em}
+.tag{border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-weight:500}
+.done{margin-left:auto;font-weight:500}
+.done.ok{color:var(--ok)} .done.again{color:var(--again)}
+.q{font-size:18px;font-weight:500;margin:16px 0 0;text-wrap:pretty}
+.en{font-family:var(--font-en);font-size:17px;line-height:1.6;background:var(--back);border-radius:10px;padding:12px 14px;margin:12px 0 0;white-space:pre-line}
+.back .en{background:var(--card)}
+.opts{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:8px}
+.opts li{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-family:var(--font-ui);font-size:16px;line-height:1.45}
+.opts li span{font-family:var(--font-ui);font-weight:700;color:var(--muted);flex:none}
+.hint{margin-top:auto;padding-top:16px;text-align:center;font-size:13px;color:var(--muted)}
+.alabel{font-size:13px;font-weight:700;color:var(--lc);letter-spacing:.06em;margin-top:16px}
+.answer{font-family:var(--font-ui);font-size:20px;font-weight:700;line-height:1.35;margin:4px 0 0;text-wrap:balance}
+.ex{margin:14px 0 0;font-size:15.5px;line-height:1.65;text-wrap:pretty}
+.ex em{font-style:normal;font-family:var(--font-en);font-weight:700}
+.marks{display:flex;gap:8px;margin-top:auto;padding-top:16px}
+.mark{flex:1;border:1.5px solid currentColor;background:transparent;border-radius:12px;padding:11px 8px;font:700 15px var(--font-ui);cursor:pointer}
+.mark.ok{color:var(--ok)} .mark.again{color:var(--again)}
+
+nav{display:flex;gap:10px;padding-block:6px calc(12px + env(safe-area-inset-bottom,0px))}
+.navbtn{flex:1;border:none;border-radius:14px;padding:14px 8px;font:700 16px var(--font-ui);cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.navbtn.main{flex:1.4;background:var(--ink);color:var(--card);border-color:var(--ink)}
+.navbtn:disabled{opacity:.4;cursor:default}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:24px}
+@media (prefers-reduced-motion: reduce){.flip{transition:none}.bar i{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <h1>중3 국어 중간고사 퀴즈</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="chips" role="group" aria-label="범위 선택">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">전체 50</button>
+      <button class="chip" id="f-x" data-f="x" aria-pressed="false">문학</button>
+      <button class="chip" id="f-y" data-f="y" aria-pressed="false">쓰기</button>
+      <button class="chip" id="f-z" data-f="z" aria-pressed="false">매체·읽기·듣기</button>
+      <button class="chip" id="f-again" data-f="again" aria-pressed="false">다시 볼 문제</button>
+      <button class="chip" id="shuffle" aria-pressed="false">섞기</button>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </header>
+
+  <div class="stage" id="stage" tabindex="0" role="button" aria-label="카드를 눌러 정답 보기">
+    <div class="flip">
+      <section class="face front" id="front"></section>
+      <section class="face back" id="back"></section>
+    </div>
+  </div>
+
+  <nav>
+    <button class="navbtn" id="prev">◀ 이전</button>
+    <button class="navbtn main" id="flipbtn">정답 보기</button>
+    <button class="navbtn" id="next">다음 ▶</button>
+  </nav>
+</div>
+
+<script>
+const L = {x:"1단원 (1) 근거를 들어 작품 해석하기 · 14~51쪽", y:"1단원 (2) 쟁점에 대해 주장하는 글 쓰기 · 52~59쪽", z:"3·4단원 매체·읽기·듣기 · 154~207쪽"};
+const UL = {x:"문학", y:"쓰기", z:"매체·읽기·듣기"};
+const Q = [
+/* ---------- 문학: 작품 해석 ---------- */
+{u:"x",t:"개념",q:"작품을 해석할 때 쓸 수 있는 근거 두 종류는?",a:"작품 안의 근거(내용, 형식) / 작품 밖의 근거(작가, 시대적 배경, 독자)",ex:"독자의 지식·경험·가치관에 따라 해석이 달라질 수 있으므로 <b>주체적인 관점</b>에서 해석하되 근거가 적절해야 합니다. (19, 47쪽)"},
+{u:"x",t:"O / X",q:"맞으면 O, 틀리면 X",en:"작가의 삶을 바탕으로 작품을 해석하는 것이 가장 올바른 해석 방법이다.",a:"X",ex:"작가의 삶은 여러 근거 중 하나일 뿐입니다. 작품 안의 근거, 시대적 배경, 독자의 경험 등 다양한 근거로 해석할 수 있습니다. (51쪽)"},
+{u:"x",t:"개념",q:"다른 해석들과 비교하여 자신의 해석을 평가하면 좋은 점 두 가지는?",a:"자신의 해석이 적절한지 검토할 수 있음 / 작품을 깊이 있게 이해할 수 있음",ex:"다른 사람의 해석이 틀렸다는 것을 입증하는 것이 목적이 아닙니다. 해석이 다양하다고 모두 옳은 것은 아니며, <b>적절한 근거</b>가 있어야 합니다. (47, 51쪽)"},
+{u:"x",t:"작품",q:"<청포도>의 작가와 그 작가에 대한 설명으로 알맞은 것은?",opts:["윤동주 – 부끄러움과 성찰을 노래한 시인","이육사 – 독립운동가이자 저항 시인","김소월 – 전통적 정서를 노래한 시인","한용운 – 승려이자 독립운동가 시인"],a:"② 이육사",ex:"이육사(1904~1944)는 강렬한 저항 의지와 조국 광복의 염원을 노래했습니다. 주요 작품: <청포도>, <절정>, <광야>. (17쪽)"},
+{u:"x",t:"작품",q:"<청포도>에서 ‘청포도’는 어떤 의미를 지닌 사물인가요?",a:"화자가 꿈꾸는 이상적인 세계에 대한 소망이 담긴 사물",ex:"탐스럽게 익어 가는 청포도는 풍요롭고 평화로운 고향을 떠올리게 합니다. 고향 사람들의 삶의 이야기가 ‘전설’처럼 열리고, 알알이 ‘먼 데 하늘’이 들어와 박힌 모습으로 그려집니다. (19쪽)"},
+{u:"x",t:"작품",q:"다음 구절에서 드러나는 화자의 태도는?",en:"아이야 우리 식탁엔 은쟁반에\n하이얀 모시 수건을 마련해 두렴",a:"손님을 정성스럽게 맞이하려는 태도 (풍요롭고 평화로운 삶을 손님과 함께 나누고 싶은 마음)",ex:"귀한 ‘은쟁반’과 ‘하이얀 모시 수건’은 손님에 대한 정성을 보여 줍니다. (19쪽)"},
+{u:"x",t:"작품",q:"<청포도>에서 화자의 소망을 강조하는 표현 방법은?",a:"푸른빛과 흰빛의 색채 대비",ex:"푸른빛: 청포도, 하늘, 푸른 바다, 청포 / 흰빛: 흰 돛단배, 은쟁반, 하이얀 모시 수건. (19쪽)"},
+{u:"x",t:"작품",q:"‘내가 바라는 손님은 고달픈 몸으로 / 청포(靑袍)를 입고 찾아온다고 했으니’에서 ‘고달픈 몸으로’를 통해 추측할 수 있는 손님의 삶은?",a:"힘들고 고난에 찬 삶을 살아온 사람",ex:"이 표현을 근거로 손님을 시련을 겪은 존재로 해석할 수 있습니다. (18쪽)"},
+{u:"x",t:"연결",q:"학생들이 <청포도>의 ‘손님’을 해석한 근거와 의미를 연결하세요.",en:"(1) 하은: 일제 강점기 1930년대 말에 발표됨\n(2) 서아: 시인이 독립운동가였음\n(3) 현우: 요리사 꿈을 준비하는 나의 경험",a:"(1) 조국의 광복 (2) 광복의 기쁨을 함께 누리고 싶은 독립운동가 (3) 내가 이루고 싶은 꿈",ex:"하은은 시대적 배경, 서아는 작가, 현우는 독자의 경험을 근거로 삼았습니다. 모두 <b>작품 밖의 근거</b>입니다. (20~21쪽)"},
+{u:"x",t:"작품",q:"<순례 주택>에서 ‘나’(오수림)가 가족을 부르는 말과, 자신을 무엇이라 생각하는지 쓰세요.",a:"가족: ‘1군’ / 자신: 1군들 사이에 어색하게 낀 ‘2군 후보 선수’",ex:"수림이는 어릴 때 엄마의 건강 문제로 외할아버지와 순례 씨 손에서 자라, 순례 씨를 가족보다 편하게 여깁니다. (23쪽)"},
+{u:"x",t:"작품",q:"순례 씨는 어떻게 순례 주택의 주인이 되었나요?",a:"세신사(때밀이)로 일해서 번 돈의 반을 10년 동안 모아서",ex:"순례 씨는 전기를 아끼려고 계단을 쓰고, 비닐을 줄이려고 빈 반찬 통을 들고 음식을 사러 가는 사람입니다. 이렇게 번 것이 마음에 걸려 집세를 많이 받지 않습니다. (23~25, 41쪽)"},
+{u:"x",t:"작품",q:"수림이네 가족(1군)이 아파트에서 쫓겨날 위기에 처한 까닭은?",a:"외할아버지가 태양광 투자 사기를 당하고 갑자기 돌아가셔서 빚 때문에 상속을 포기했고, 아파트가 경매로 넘어갔기 때문",ex:"1군들이 아파트에 살 수 있는 시간은 딱 3주였습니다. (25쪽)"},
+{u:"x",t:"어휘",q:"뜻풀이에 알맞은 단어는?",en:"(1) 자기로부터 직계로 이어져 내려가는 혈족(아들, 딸, 손자)\n(2) 상속인에게 자기의 권리, 의무를 물려주는 사람",a:"(1) 직계 비속 (2) 피상속인",ex:"직계 존속은 부모·조부모처럼 위로 이어지는 혈족, 방계 혈족은 형제자매·백부모처럼 갈라져 나간 혈족입니다. 수림이는 할아버지의 직계 비속입니다. (25쪽)"},
+{u:"x",t:"작품",q:"할아버지의 장부를 사진으로 모두 찍어 둔 수림이의 의도는?",a:"엄마가 순례 씨가 할아버지 돈을 빼돌렸다고 허위 사실을 말할 때 증거로 쓰려고",ex:"장부에는 할아버지가 17년 동안 엄마에게 보낸 돈 4억 2,730만 원이 적혀 있었습니다. (27쪽)"},
+{u:"x",t:"작품",q:"순례 씨가 말한 ‘어른’이란 어떤 사람인가요?",a:"자기 힘으로 살아 보려고 애쓰는 사람",ex:"순례 씨는 “수림이 너 하나만 어른 같다. 현재까진.”이라고 말합니다. 아르바이트로 독립하겠다는 수림이의 태도 때문입니다. (33~35쪽)"},
+{u:"x",t:"작품",q:"수림이가 가난해진 상황을 ‘땅에 닿은 느낌’이라고 말한 까닭은?",a:"할아버지가 힘들게 번 돈에 기대 살던 ‘허공에 뜬’ 불편함에서 벗어나, 이제 스스로 땅을 딛고 설 수 있을 것 같아서 (절망보다 편안함에 가까움)",ex:"아파트 15층만큼 허공에 떠 있는 느낌이었다가 이제야 발이 땅에 닿았다고 표현합니다. (33쪽)"},
+{u:"x",t:"작품",q:"순례 씨가 말한 ‘누가 누가 더 어린가’ 내기란?",a:"마흔이 넘은 어른들이 늙은 부모에게 받는 도움(차, 학원비, 생활비)을 부끄러운 줄 모르고 자랑하는 모습",ex:"순례 씨는 승갑 씨(할아버지)가 딸에게 계속 돈을 주어 1군들이 철들 기회를 빼앗았는지도 모른다고 말합니다. (35쪽)"},
+{u:"x",t:"작품",q:"순례 씨가 1군들에게 제안한 도움은? 그 목적은?",a:"순례 주택 201호에 보증금 없이 월세로 들어와 살게 함 / ‘온실’ 밖에서 적응 훈련을 하도록 돕기 위해",ex:"순례 씨는 “온실에서 죽 살던 사람을 갑자기 벌판에 데려다 놓을 수는 없다.”고 말합니다. (35쪽)"},
+{u:"x",t:"작품",q:"<순례 주택>에서 ‘줄자’가 상징하는 것은?",a:"어른다움 (스스로 삶을 정확히 재고 준비하는 태도)",ex:"순례 씨는 집을 보러 온 사람에게 정확한 벽 길이를 재라고 줄자를 빌려줍니다. 수림이는 줄자가 ‘어른다움’의 상징처럼 느껴졌고, 1군들도 써 보게 하고 싶어 합니다. 순례 씨는 마지막에 줄자를 수림이에게 물려줍니다. (37~39, 43쪽)"},
+{u:"x",t:"작품",q:"수림이와 길동 씨가 꾸민 ‘작전’과, 그것이 들통난 뒤 순례 씨가 두 사람을 혼낸 까닭은?",a:"작전: 순례 씨가 순례 주택을 수림이에게 물려줄 것처럼 거짓말해 가족을 변화시킴 / 혼낸 까닭: 상대가 아무리 철이 없어도 인격적으로 대하지 않았기 때문",ex:"순례 씨는 유언장에서 상속자를 <b>국경없는의사회</b>로 정했다고 말합니다. (39~43쪽)"},
+{u:"x",t:"작품",q:"“나는 내 인생의 순례자니까. 관광객이 아니라.”에서 ‘순례자’와 ‘관광객’의 의미는?",a:"순례자: 목적을 향해 길을 헤쳐 나가는 사람 / 관광객: 잠시 구경하며 지나가는 사람",ex:"자기 삶을 주체적으로 책임지며 살아가겠다는 다짐이 담겨 있습니다. 순례 씨도 “나는 그런 길 안 걸어도 원래 순례야.”라고 말합니다. (29, 43, 47쪽)"},
+{u:"x",t:"작품",q:"<순례 주택>의 작가는?",a:"유은실",ex:"동화 작가로, 뒤처지거나 부족한 부분이 있는 사람들을 향한 따뜻한 시선이 돋보이는 작품을 썼습니다. 주요 작품: 《순례 주택》, 《변두리》, 《나의 린드그렌 선생님》. (43쪽)"},
+{u:"x",t:"작품",q:"《이솝 우화》 <개미와 베짱이>를 ‘노동의 가치에 주목한 이야기’로 해석한 근거는?",a:"작가 이솝이 노예 출신이었음 (작품 밖의 근거)",ex:"고대 그리스에서 노동은 하층민과 노예의 몫이었고, 노예였던 이솝에게 노동은 유일한 선택지이자 생존할 수 있는 힘이었을 것이라는 해석입니다. (48~49쪽)"},
+{u:"x",t:"어휘",q:"뜻에 알맞은 한자 성어를 고르세요.",en:"까마귀 새끼가 자라서 늙은 어미에게 먹이를 물어다 주는 효라는 뜻으로, 자식이 자란 후 어버이의 은혜를 갚는 효성",opts:["금지옥엽","가화만사성","결초보은","반포지효"],a:"④ 반포지효",ex:"금지옥엽: 귀한 자손 / 가화만사성: 가정이 화목하면 모든 일이 잘됨 / 결초보은: 죽어서도 은혜를 잊지 않고 갚음. (51쪽)"},
+
+/* ---------- 쓰기: 주장하는 글 ---------- */
+{u:"y",t:"개념",q:"‘쟁점’이란?",a:"서로 의견이 대립할 때 논쟁의 중심이 되는 문제",ex:"수민이는 신문 기사와 댓글을 보고 ‘종이책이 꼭 필요한가?’라는 쟁점을 파악했습니다. (55쪽)"},
+{u:"y",t:"자료",q:"신문 기사 댓글에서 ‘종이사랑’과 ‘전자책최고’가 각각 든 근거는?",a:"종이사랑: 전자책으로 대체할 수 없는 종이책만의 장점이 있음 / 전자책최고: 정보의 저장과 공유가 간편한 전자책이 있음",ex:"같은 사안에 대해 찬반 의견이 엇갈리는 것을 보고 쟁점을 파악할 수 있습니다. (55쪽)"},
+{u:"y",t:"순서",q:"쟁점에 대해 주장하는 글을 쓰는 과정을 순서대로 쓰세요.",a:"의견 차이가 있는 사안 찾고 쟁점 분석하기 → 자료와 의견 수집하며 주장 정하기 → 내용 조직하기(개요) → 주장하는 글 쓰기",ex:"(54~59쪽)"},
+{u:"y",t:"자료",q:"수민이가 읽은 신문 기사에서 일부 대학이 종이책을 폐기한 까닭은?",a:"자리만 차지하고 무거운 종이책을 소장하느니 디지털화한 뒤 폐기하는 것이 낫다고 판단해서",ex:"반면 교수와 연구자들은 “지식의 <b>영속성</b>을 보장하는 것은 종이”라고 지적했습니다. 영속성: 영원히 계속되는 성질. (55쪽)"},
+{u:"y",t:"자료",q:"수민이가 ‘종이책은 꼭 필요하다’는 주장을 뒷받침하려고 든 이유 세 가지는?",a:"독해력을 높일 수 있음 / 정서적 안정감을 느낄 수 있음 / 구체적인 감각을 통해 즐거움을 느낄 수 있음",ex:"근거 예: 발렌시아 대학 연구(독해력 6~8배), 매일 30분 종이책 독서 시 심박수 안정·코르티솔 감소, 남은 분량을 손의 감각으로 알 수 있음. (57~59쪽)"},
+{u:"y",t:"자료",q:"수민이가 개요의 이유 1(독해력)에서 ‘근거 2: 전자책은 자투리 시간에 쉽게 읽을 수 있음’을 삭제한 까닭은?",a:"종이책 독서가 독해력을 높인다는 이유와 관련 없는 내용(오히려 전자책의 장점)이기 때문",ex:"근거는 주장과 이유를 뒷받침하는 내용이어야 합니다. (59쪽)"},
+{u:"y",t:"자료",q:"수민이가 결론의 ‘전자책을 읽지 말고 종이책을 읽자’를 수정한 까닭은?",a:"전자책이 보편화된 사회·문화적 맥락을 고려할 때 독자가 받아들이기 어려울 것 같아서",ex:"주장하는 글은 <b>사회·문화적 맥락</b> 안에서 받아들여질 만한지 점검해야 합니다. (59쪽)"},
+{u:"y",t:"자료",q:"수민이가 서론에서 종이책의 필요성에 대한 사회적 논란을 소개한 까닭은?",a:"독자들이 쟁점에 관심을 갖도록 하려고",ex:"예상 독자는 지역 신문의 독자들입니다. (57, 59쪽)"},
+{u:"y",t:"개념",q:"책임감 있게 글을 쓰기 위해 필요한 태도는?",a:"인용한 자료의 출처를 밝힘 / 정확하고 믿을 만한 자료를 씀 / 언어 공동체를 고려해 특정 집단만 이해하는 표현을 피함",ex:"수민이는 “출처를 밝히고 글에 인용해야겠어.”라고 말합니다. 필자로서 자신을 성찰하며 <b>윤리적 소통 문화</b>를 만드는 데 기여해야 합니다. (57쪽)"},
+
+/* ---------- 매체·읽기·듣기 ---------- */
+{u:"z",t:"개념",q:"‘뉴스 리터러시’란?",a:"비판적 사고를 바탕으로 뉴스를 제대로 읽고 이해하고 분별하는 능력",ex:"뉴스의 앞뒤 맥락을 읽고 비판적으로 곱씹어 볼 수 있는 능력입니다. (김청연, 《왜요, 그 뉴스가 어때서요?》) (155쪽)"},
+{u:"z",t:"개념",q:"글쓴이가 말한 뉴스를 읽을 때 필요한 태도를 세 가지 이상 쓰세요.",a:"곧이곧대로 받아들이지 말고 거리 두기 / 사건의 앞뒤 맥락 살피기 / 사실과 의견 구분하기 / 다른 사람과 뉴스에 대해 이야기 나누기 / 뉴스 직접 써 보기",ex:"(154~155쪽)"},
+{u:"z",t:"선택",q:"다음 중 ‘의견’을 적은 문장은?",opts:["연기자 ◯◯◯ 씨는 올해 이 영화로 세 개의 주연상을 받았다.","연기자 ◯◯◯ 씨는 신들린 듯한 연기로 우리나라 최고의 주연 배우로 자리를 굳혔다.","이 영화는 지난달 개봉했다.","시상식은 서울에서 열렸다."],a:"②",ex:"‘신들린 듯한’, ‘최고의’는 글쓴이의 판단입니다. 의견만으로 이루어진 뉴스는 제대로 된 것인지 의심해 볼 필요가 있습니다. (155쪽)"},
+{u:"z",t:"어휘",q:"뜻이 바르게 짝지어진 것은?",opts:["편파적 – 공정하지 못하고 한쪽으로 치우친 것","간과 – 관심을 가지고 주의 깊게 살핌","분별 – 일정한 기준에 따라 전체를 몇 개로 나눔","과장 – 사실보다 작게 나타냄"],a:"①",ex:"간과: 큰 관심 없이 대강 보아 넘김 / 분별: 서로 다른 일이나 사물을 구별하여 가름 / 과장: 사실보다 지나치게 불려서 나타냄. ‘호도’는 명확히 하지 않고 일시적으로 감추거나 덮어 버림을 뜻합니다. (157쪽)"},
+{u:"z",t:"O / X",q:"맞으면 O, 틀리면 X",en:"정보를 의도에 따라 과도하게 반복, 과장, 축소하여 전달하는 매체 자료는 공정하다고 볼 수 없다.",a:"O",ex:"매체 자료는 제작된 사회·문화적 맥락을 고려해 공정성을 평가해야 하며, 같은 사건을 다룬 다른 매체 자료와 비교해 보는 것이 좋습니다. (157쪽)"},
+{u:"z",t:"개념",q:"‘옴부즈맨 제도’란?",a:"공공 기관의 업무 집행을 감시해 국민의 권리가 침해받지 않도록 하는 제도",ex:"이 밖에 분쟁 조정 제도, 기업·공공 기관의 감사 팀, 매체 비평 프로그램도 공정한 세상을 위한 노력입니다. (163쪽)"},
+{u:"z",t:"개념",q:"‘주제 통합적 읽기’란?",a:"동일한 화제를 다룬 여러 글이나 자료를 비교·분석하며 읽고, 자신의 관점으로 통합하여 의미를 재구성하는 읽기",ex:"방법: 관점·형식이 다른 글 비교·분석 → 비판적으로 읽고 자신의 관점 세우기 → 자신의 관점으로 통합 → 의미를 재구성해 표현. (181쪽)"},
+{u:"z",t:"개념",q:"주제 통합적 읽기의 효과 세 가지는?",a:"글을 깊이 있게 이해하고 사고의 폭을 넓힘 / 균형 있는 시각으로 정보를 수용함 / 편견이나 선입견을 배제하고 합리적으로 판단함",ex:"(181쪽)"},
+{u:"z",t:"작품",q:"<인공지능과 로봇이 일자리를 빼앗아 갈까?>에서 기계가 일자리를 빼앗는다며 기계를 파괴했던 1차 산업 혁명 시기의 사회 운동은?",a:"러다이트 운동",ex:"하지만 생산량이 늘어 산업이 커지며 일자리가 많이 생겼습니다. 자동차가 생기자 인력거꾼·마부 대신 운전기사·정비공이 등장했습니다. 글쓴이: 전승민. (171쪽)"},
+{u:"z",t:"작품",q:"글쓴이가 4차 산업 혁명이 이전 산업 혁명과 다르다고 본 까닭은?",a:"사람이 해야 했던 일도 로봇(인공지능)이 할 수 있게 되었기 때문",ex:"예: 내비게이션이 보편화되면서 택시 운전기사의 경력에 따른 실력 차이가 줄었습니다. 3차 산업 혁명 때는 섬세한 작업은 사람이 해야 했습니다. (171쪽)"},
+{u:"z",t:"자료",q:"카드 뉴스 ‘인공지능, 완벽하지 않아요’에서 제시한 인공지능의 역기능 세 가지는?",a:"편견이 담긴 정보 전달 / 개인 정보 유출이나 악용 / 잘못된 판단에 대한 책임 소재 불분명",ex:"카드 뉴스는 문자와 그림을 결합하고, 인공지능 활용 방법을 주체별(기업, 정부, 우리 모두)로 제시합니다. (181쪽)"},
+{u:"z",t:"작품",q:"<넓이의 독서>에서 글쓴이가 말한 ‘깊이’와 ‘넓이’의 관계는?",a:"깊이(전문성)의 전제는 넓이(교양)이다. 그 반대는 성립하지 않는다.",ex:"글쓴이 이동진은 시간과 공간의 제한이 사라진 현대 사회에서 넓이가 더 중요하다고 보며, 넓이를 갖추는 데 가장 적합한 활동이 독서라고 말합니다. (185쪽)"},
+{u:"z",t:"작품",q:"<넓이의 독서>의 글쓴이가 문제라고 본 독서는?",a:"편중된 독서 (소설만 읽거나 역사서·경제서만 읽는 것)",ex:"어떤 것을 안다고 하려면 그 범주와 맥락, 다른 것과의 차이를 알아야 하므로 다양한 책을 읽어야 한다는 주장입니다. 책을 무조건 많이 읽는 것보다 어떤 책을 어떻게 읽느냐가 중요합니다. (185쪽)"},
+{u:"z",t:"연결",q:"설득 전략과 설명을 연결하세요.",en:"(1) 이성적 설득 전략\n(2) 감성적 설득 전략\n(3) 인성적 설득 전략",a:"(1) 통계·연구 결과 등 타당한 근거로 논리적으로 뒷받침 (2) 동정심·분노·자긍심 등 감정에 호소 (3) 화자의 성품·경험·전문성으로 신뢰를 얻음",ex:"설득 전략은 화자가 청자의 신념, 태도, 행동을 바꾸려고 말할 때 쓰는 전략입니다. (191쪽)"},
+{u:"z",t:"선택",q:"물 부족 기부 광고에서 “저는 10년 동안 물 부족 지역에서 구호 활동을 이어 오며…”라는 말에 쓰인 설득 전략은?",opts:["이성적 설득 전략","감성적 설득 전략","인성적 설득 전략"],a:"③ 인성적 설득 전략",ex:"화자의 경험과 전문성으로 신뢰를 줍니다. ‘전 세계 인구의 27퍼센트, 약 22억 명’ 같은 수치는 이성적, ‘뜨거운 햇빛 아래 무거운 물통을 이고…’는 감성적 전략입니다. (191쪽)"},
+{u:"z",t:"자료",q:"연설 <점박이물범도 백령도 주민입니다>에서 화자가 처음에 자신을 ‘백령도에 사는 고등학생’이라고 소개하고 활동 경험을 말하는 것은 어떤 설득 전략인가요?",a:"인성적 설득 전략 (화자의 경험으로 신뢰를 얻음)",ex:"점박이물범은 멸종 위기 동물이며 국내 집단 서식지는 백령도가 유일하다고 소개합니다. 1930년대 8,000여 마리에서 크게 줄었다는 수치는 이성적 전략입니다. (193쪽)"},
+{u:"z",t:"개념",q:"‘80퍼센트의 소비자가 만족한 제품’이라는 광고 표현에 숨은 전략은?",a:"같은 정보(20%는 불만족)라도 긍정적인 면을 강조해 표현하여 선택을 유도하는 전략",ex:"반대로 ‘이 크림을 쓰지 않으면 피부가 건조해져요’처럼 부정적 표현으로 불안감을 만들어 구매를 유도하기도 합니다. 쓰레기 무단 투기 경고문 대신 농구 골대 모양 쓰레기통을 둔 것은 강요 대신 흥미로 행동을 이끄는 전략입니다. (207쪽)"}
+];
+
+const stage=document.getElementById('stage'),front=document.getElementById('front'),back=document.getElementById('back');
+const countEl=document.getElementById('count'),barEl=document.getElementById('bar');
+const prevB=document.getElementById('prev'),nextB=document.getElementById('next'),flipB=document.getElementById('flipbtn');
+Q.forEach((q,i)=>q.id=i+1);
+
+let marks={};
+try{marks=JSON.parse(localStorage.getItem('kor3-mid-marks')||'{}')||{}}catch(e){marks={}}
+function saveMarks(){try{localStorage.setItem('kor3-mid-marks',JSON.stringify(marks))}catch(e){}}
+
+let filter='all',list=Q.slice(),idx=0,shuffled=false;
+const lc=u=>({x:'var(--lp)',y:'var(--lc2)',z:'var(--lg)'})[u];
+
+function build(){
+  if(filter==='all')list=Q.slice();
+  else if(filter==='again')list=Q.filter(q=>marks[q.id]==='again');
+  else list=Q.filter(q=>String(q.u)===filter);
+  if(shuffled){for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}}
+  idx=0;render();
+}
+function metaHTML(q){
+  const m=marks[q.id];
+  const done=m==='ok'?'<span class="done ok">✓ 맞음</span>':m==='again'?'<span class="done again">↺ 다시 볼 문제</span>':'';
+  return `<div class="meta"><span class="lesson">${UL[q.u]}</span><span class="tag">${q.t}</span><span>${q.id}번</span>${done}</div>`;
+}
+function fmtA(a){return a.replace(/\s+(?=\([0-9]\)|㉡|㉢)/g,'<br>').replace(/\s\/\s/g,'<br>')}
+function render(){
+  stage.classList.remove('flipped');flipB.textContent='정답 보기';
+  const n=list.length;
+  if(!n){
+    front.style.setProperty('--lc','var(--line)');back.style.setProperty('--lc','var(--line)');
+    front.innerHTML='<div class="empty">다시 볼 문제가 아직 없습니다.<br>카드 뒷면에서 “다시 볼래요”를 누르면 여기에 모입니다.</div>';
+    back.innerHTML='';countEl.innerHTML='<b>0</b> / 0';barEl.style.width='0';
+    prevB.disabled=nextB.disabled=flipB.disabled=true;return;
+  }
+  flipB.disabled=false;
+  const q=list[idx];
+  front.style.setProperty('--lc',lc(q.u));back.style.setProperty('--lc',lc(q.u));
+  const opts=q.opts?`<ol class="opts">${q.opts.map((o,i)=>`<li><span>${'①②③④⑤'[i]}</span>${o}</li>`).join('')}</ol>`:'';
+  const en=q.en?`<div class="en">${q.en}</div>`:'';
+  front.innerHTML=`${metaHTML(q)}<p class="q">${q.q}</p>${en}${opts}<div class="hint">카드를 누르면 정답이 나와요 · 옆으로 밀면 다음 문제</div>`;
+  back.innerHTML=`${metaHTML(q)}<div class="alabel">정답</div><p class="answer">${fmtA(q.a)}</p><p class="ex">${q.ex}</p>
+    <div class="marks"><button class="mark again" id="m-again" data-m="again">↺ 다시 볼래요</button><button class="mark ok" id="m-ok" data-m="ok">✓ 맞았어요</button></div>`;
+  front.scrollTop=0;back.scrollTop=0;
+  countEl.innerHTML=`<b>${idx+1}</b> / ${n}`;
+  barEl.style.width=((idx+1)/n*100)+'%';
+  prevB.disabled=idx===0;nextB.disabled=idx===n-1;
+}
+function flip(){if(!list.length)return;const f=stage.classList.toggle('flipped');flipB.textContent=f?'문제 보기':'정답 보기'}
+function go(d){const j=idx+d;if(j<0||j>=list.length)return;idx=j;render()}
+
+stage.addEventListener('click',e=>{
+  const m=e.target.closest('.mark');
+  if(m){e.stopPropagation();const q=list[idx];marks[q.id]=m.dataset.m;saveMarks();
+    if(filter==='again'&&m.dataset.m==='ok'){const keep=idx;list=Q.filter(x=>marks[x.id]==='again');idx=Math.min(keep,Math.max(list.length-1,0));render();return}
+    if(idx<list.length-1)go(1);else render();return}
+  flip();
+});
+stage.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();flip()}});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+flipB.onclick=flip;prevB.onclick=()=>go(-1);nextB.onclick=()=>go(1);
+
+let sx=0,sy=0;
+stage.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){go(dx<0?1:-1)}},{passive:true});
+
+document.querySelectorAll('.chip[data-f]').forEach(c=>c.onclick=()=>{
+  filter=c.dataset.f;document.querySelectorAll('.chip[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===c));build()});
+document.getElementById('shuffle').onclick=function(){shuffled=!shuffled;this.setAttribute('aria-pressed',shuffled);this.textContent=shuffled?'섞음 ✓':'섞기';build()};
+
+build();
+</script>
+
+</body>
+</html>

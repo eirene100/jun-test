@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*{box-sizing:border-box}[hidden]{display:none!important}</style>
+<title>중3 역사 중간고사 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen flashcard app — top filter bar, one flip card filling the middle, fixed nav bar at the bottom */
+:root{
+  --bg:#E9EDF2; --card:#FFFFFF; --ink:#1B2430; --muted:#5D6878; --line:#D3D9E1;
+  --lp:#C2552D; --lc2:#2F6FB0; --lg:#13857A;
+  --ok:#1F8A4C; --again:#C2410C; --back:#F6F8FB;
+  --font-ui:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-en:"Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.55;margin:0;word-break:keep-all;overflow-wrap:anywhere}
+.app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding-inline:16px;box-sizing:border-box}
+header{padding-block:12px 8px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.count b{color:var(--ink);font-size:16px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 14px var(--font-ui);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip:focus-visible,.navbtn:focus-visible,.mark:focus-visible,.stage:focus-visible{outline:3px solid var(--lg);outline-offset:2px}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);width:0;transition:width .25s}
+
+.stage{flex:1;min-height:0;perspective:1400px;position:relative;margin-block:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:18px}
+.flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.stage.flipped .flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;border:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column;box-sizing:border-box;padding:20px 20px 18px}
+.front{background:var(--card)}
+.back{background:var(--back);transform:rotateY(180deg)}
+.face::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--lc);border-radius:18px 0 0 18px}
+.meta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.lesson{color:var(--lc);font-weight:700;letter-spacing:.04em}
+.tag{border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-weight:500}
+.done{margin-left:auto;font-weight:500}
+.done.ok{color:var(--ok)} .done.again{color:var(--again)}
+.q{font-size:18px;font-weight:500;margin:16px 0 0;text-wrap:pretty}
+.en{font-family:var(--font-en);font-size:17px;line-height:1.6;background:var(--back);border-radius:10px;padding:12px 14px;margin:12px 0 0;white-space:pre-line}
+.back .en{background:var(--card)}
+.opts{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:8px}
+.opts li{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-family:var(--font-ui);font-size:16px;line-height:1.45}
+.opts li span{font-family:var(--font-ui);font-weight:700;color:var(--muted);flex:none}
+.hint{margin-top:auto;padding-top:16px;text-align:center;font-size:13px;color:var(--muted)}
+.alabel{font-size:13px;font-weight:700;color:var(--lc);letter-spacing:.06em;margin-top:16px}
+.answer{font-family:var(--font-ui);font-size:20px;font-weight:700;line-height:1.35;margin:4px 0 0;text-wrap:balance}
+.ex{margin:14px 0 0;font-size:15.5px;line-height:1.65;text-wrap:pretty}
+.ex em{font-style:normal;font-family:var(--font-en);font-weight:700}
+.marks{display:flex;gap:8px;margin-top:auto;padding-top:16px}
+.mark{flex:1;border:1.5px solid currentColor;background:transparent;border-radius:12px;padding:11px 8px;font:700 15px var(--font-ui);cursor:pointer}
+.mark.ok{color:var(--ok)} .mark.again{color:var(--again)}
+
+nav{display:flex;gap:10px;padding-block:6px calc(12px + env(safe-area-inset-bottom,0px))}
+.navbtn{flex:1;border:none;border-radius:14px;padding:14px 8px;font:700 16px var(--font-ui);cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.navbtn.main{flex:1.4;background:var(--ink);color:var(--card);border-color:var(--ink)}
+.navbtn:disabled{opacity:.4;cursor:default}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:24px}
+@media (prefers-reduced-motion: reduce){.flip{transition:none}.bar i{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <h1>중3 역사 중간고사 퀴즈</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="chips" role="group" aria-label="범위 선택">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">전체 50</button>
+      <button class="chip" id="f-a" data-f="a" aria-pressed="false">조선 전기</button>
+      <button class="chip" id="f-b" data-f="b" aria-pressed="false">조선 후기</button>
+      <button class="chip" id="f-c" data-f="c" aria-pressed="false">근현대</button>
+      <button class="chip" id="f-again" data-f="again" aria-pressed="false">다시 볼 문제</button>
+      <button class="chip" id="shuffle" aria-pressed="false">섞기</button>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </header>
+
+  <div class="stage" id="stage" tabindex="0" role="button" aria-label="카드를 눌러 정답 보기">
+    <div class="flip">
+      <section class="face front" id="front"></section>
+      <section class="face back" id="back"></section>
+    </div>
+  </div>
+
+  <nav>
+    <button class="navbtn" id="prev">◀ 이전</button>
+    <button class="navbtn main" id="flipbtn">정답 보기</button>
+    <button class="navbtn" id="next">다음 ▶</button>
+  </nav>
+</div>
+
+<script>
+const L = {a:"조선의 성립과 발전 · 109~135쪽", b:"조선 사회의 변동 · 138~159쪽", c:"근현대 사회의 전개 · 168~175, 190~191쪽"};
+const UL = {a:"조선 전기", b:"조선 후기", c:"근현대"};
+const Q = [
+/* ---------- 조선 전기 ---------- */
+{u:"a",t:"연결",q:"왕과 업적을 바르게 연결하세요.",en:"(1) 태종   (2) 세종   (3) 세조   (4) 성종",a:"(1) 사병 혁파, 호패법 (2) 집현전 설치, 경연 활성화 (3) 집현전·경연 폐지, 직전법 (4) 홍문관 설치, 『경국대전』 완성",ex:"태종은 왕자의 난으로 권력을 잡고 왕권을 강화했고, 세종은 왕권과 신권의 조화를 추구했습니다. 성종의 『경국대전』으로 유교적 법치 국가의 토대가 마련되었습니다. (109쪽)"},
+{u:"a",t:"개념",q:"‘직전법’이란?",a:"전·현직 관리에게 수조권을 주던 과전법을 고쳐, 현직 관리에게만 수조권을 준 제도 (세조)",ex:"국가 재정을 안정시키려고 실시했습니다. (109쪽)"},
+{u:"a",t:"빈칸",q:"빈칸에 알맞은 말은?",en:"조선은 국왕을 정점으로 ( ㉠ )와/과 6조 중심의 중앙 정치 조직을 마련하였다. ( ㉠ )는 3정승이 합의하여 나랏일을 총괄하는 최고 통치 기구였다.",a:"㉠ 의정부",ex:"6조(이·호·예·병·형·공조)는 나라 업무를 나누어 집행했습니다. (110쪽)"},
+{u:"a",t:"개념",q:"‘3사’는 어떤 기관이며, 설치한 목적은?",a:"사헌부·사간원·홍문관 / 권력의 독점과 부정을 막기 위해(관리 비리 감찰, 잘못된 정치 비판)",ex:"사헌부는 관리 감찰, 사간원은 간쟁(왕에게 잘못을 말함), 홍문관은 자문을 맡았습니다. 왕권과 신권의 조화를 추구했습니다. (110쪽)"},
+{u:"a",t:"선택",q:"조선의 지방 행정에 대한 설명으로 옳지 <b>않은</b> 것은?",opts:["전국을 8도로 나누었다","모든 군현에 수령을 보내고 관찰사가 감독하였다","향·부곡·소를 군현으로 승격하였다","향리의 지위가 고려 시대보다 높아졌다"],a:"④",ex:"조선의 향리는 수령을 보좌하는 역할에 그쳐 <b>지위가 낮아졌습니다</b>. 지방 양반은 자치 기구인 <b>유향소</b>를 만들어 수령을 돕고 향리를 감찰했습니다. (110쪽)"},
+{u:"a",t:"개념",q:"조선의 과거 제도 세 가지와, 각각 주로 응시한 계층은?",a:"문과(문관, 주로 양반 자제) / 무과(무관, 양반·향리·상민 자제) / 잡과(기술관, 중인 자제)",ex:"개인의 능력이 중시되어 음서 출신은 고위직에 오르기 어려웠습니다. 천인은 과거를 볼 수 없었습니다. 최고 교육 기관은 <b>성균관</b>, 지방에는 <b>향교</b>, 한성에는 4부 학당이 있었습니다. (111쪽)"},
+{u:"a",t:"빈칸",q:"빈칸에 알맞은 숫자는?",en:"군역은 ( ㉠ )세 이상 ( ㉡ )세 미만의 양인 남자에게 부과되었다.",a:"㉠ 16  ㉡ 60",ex:"중앙에는 5위, 지방에는 병마절도사와 수군절도사를 두었습니다. 위급 상황을 알리는 <b>봉수제</b>도 운영했습니다. (111쪽)"},
+{u:"a",t:"개념",q:"조선 외교의 기본 원칙 ‘사대교린’이란?",a:"사대: 큰 나라(명)를 섬김 / 교린: 이웃 나라(여진·일본)와 가깝게 지냄",ex:"사대 외교는 조공과 책봉 형식이었고, 책봉은 왕의 지위를 국제적으로 인정받아 국내 정치 안정에 도움이 되었습니다. 교린은 회유책과 강경책을 함께 썼습니다. (112쪽)"},
+{u:"a",t:"연결",q:"조선 초 대외 관계를 연결하세요.",en:"(1) 여진   (2) 일본(왜구)",a:"(1) 세종 때 4군 6진 개척, 사민 정책 (2) 세종 때 이종무의 쓰시마섬 토벌, 이후 3포 개항",ex:"여진에게는 관직·토지를 주어 귀순을 장려하고 무역소를 설치했습니다. 일본과는 3포를 열어 제한적으로 무역을 허용했습니다. (113쪽)"},
+{u:"a",t:"개념",q:"성종이 사림을 등용한 까닭은? 사림은 어떤 정치를 추구했나요?",a:"세력이 커진 훈구를 견제하려고 / 도덕과 의리에 바탕을 둔 왕도 정치",ex:"사림은 주로 3사에 배치되어 공론을 내세우며 훈구의 권력 독점과 비리를 비판했습니다. 대표 인물: 김종직. (116쪽)"},
+{u:"a",t:"개념",q:"조광조가 추진한 개혁 두 가지는?",a:"현량과 실시(추천으로 인재 등용) / 위훈 삭제(거짓 공신의 자격 취소)",ex:"훈구의 반발과 중종의 부담으로 사화가 일어나 조광조 등 사림이 제거되었습니다. 그래도 사림은 서원과 향약을 바탕으로 성장해 선조 때 중앙 정치를 주도했습니다. (117쪽)"},
+{u:"a",t:"개념",q:"사림이 동인과 서인으로 나뉜 계기는?",a:"외척의 정치 참여 문제와 이조 전랑 임명을 둘러싼 갈등",ex:"이렇게 생긴 정치 집단이 <b>붕당</b>입니다. 동인은 이황·조식·서경덕, 서인은 이이·성혼의 학문을 계승했습니다. 이조 전랑은 3사 관리와 자기 후임을 추천할 수 있는 중요한 관직이었습니다. (117쪽)"},
+{u:"a",t:"개념",q:"조선 최초의 서원과 최초의 사액 서원은?",a:"주세붕이 세운 백운동 서원 → 이황의 건의로 ‘소수서원’ 현판을 받아 최초의 사액 서원",ex:"서원은 훌륭한 유학자를 제사 지내고 성리학을 연구하며 양반 자제를 교육한 곳입니다. <b>사액 서원</b>은 왕이 이름을 내려 준 서원으로 토지·노비·서적을 지원받았습니다. (118쪽)"},
+{u:"a",t:"빈칸",q:"향약의 4대 덕목 중 빈칸은?",en:"덕업상권 / ( ㉠ ) / 예속상교 / 환난상휼",a:"㉠ 과실상규 (잘못된 것은 서로 규제한다)",ex:"향약은 공동체 풍속에 유교 윤리를 더한 향촌 자치 규약입니다. 중종 때 조광조가 소개하고, 이황·이이가 우리 실정에 맞게 만들어 퍼졌습니다. (118~119쪽)"},
+{u:"a",t:"순서",q:"임진왜란의 주요 사건을 순서대로 나열하세요.",en:"ㄱ. 노량 해전   ㄴ. 일본군 부산 상륙   ㄷ. 평양성 탈환·행주 대첩   ㄹ. 휴전 회담 결렬 후 일본 재침략(정유재란)",a:"ㄴ → ㄷ → ㄹ → ㄱ",ex:"1592년 일본군 침략 → 이순신 수군과 의병의 활약 → 명 지원군 참전으로 국제전 확대 → 평양성 탈환, 권율의 행주산성 승리 → 휴전 회담 결렬 → 재침략 → 도요토미 히데요시 사망 후 철수하는 일본군을 이순신이 노량 해전에서 격파. (126~127쪽)"},
+{u:"a",t:"선택",q:"임진왜란이 조선에 끼친 영향으로 알맞지 <b>않은</b> 것은?",opts:["인구가 크게 줄었다","농경지가 황폐해지고 재정이 어려워졌다","불국사 등 문화재가 불타거나 약탈되었다","신분 질서가 더욱 굳건해졌다"],a:"④",ex:"노비 문서가 불타고 공을 세운 상민·노비의 신분이 올라가면서 <b>신분 질서가 흔들렸습니다</b>. (127쪽)"},
+{u:"a",t:"비교",q:"광해군과 인조의 외교 정책을 비교하세요.",a:"광해군: 명과 후금 사이 중립 외교 / 인조(서인 정권): 친명배금 정책",ex:"광해군은 영창 대군을 죽이고 인목 대비를 폐위해 비판받았고, 서인이 <b>인조반정</b>을 일으켰습니다. 친명배금 정책이 호란의 배경이 되었습니다. (128, 130쪽)"},
+{u:"a",t:"비교",q:"정묘호란과 병자호란을 비교하세요.",a:"정묘호란(1627): 후금 침입, 인조 강화도 피란, 화의 / 병자호란(1636): 청의 군신 관계 요구 거부 → 침입, 인조 남한산성 항전 후 삼전도에서 항복",ex:"병자호란 후 청을 정벌하자는 <b>북벌 운동</b>(효종)이 일어났지만 실행되지 못했고, 청의 문물을 배우자는 <b>북학론</b>도 등장했습니다. (130~131쪽)"},
+
+/* ---------- 조선 후기 ---------- */
+{u:"b",t:"개념",q:"왜란 이후 통치 기구는 어떻게 바뀌었나요?",a:"비변사가 최고 합의 기구가 되어 의정부와 6조는 유명무실해짐 / 훈련도감 설치(5군영 체제)",ex:"훈련도감은 포수·사수·살수의 <b>삼수병</b>으로 구성된 직업 군인 부대였습니다. 지방군은 여러 신분으로 구성된 <b>속오군</b>입니다. (138쪽)"},
+{u:"b",t:"연결",q:"조선 후기 조세 제도의 개편을 연결하세요.",en:"(1) 전세   (2) 공납   (3) 군역",a:"(1) 영정법(풍흉 관계없이 일정액) (2) 대동법(토지 1결당 쌀 12두) (3) 균역법(군포 2필 → 1필)",ex:"대동법 실시로 관청 물품을 대는 <b>공인</b>이 등장하고 상품 화폐 경제가 발달했습니다. 지주의 반대로 전국 실시까지 100년이 걸렸습니다. (138쪽)"},
+{u:"b",t:"개념",q:"‘예송’이란 무엇이며, 어느 붕당 사이의 대립이었나요?",a:"현종 때 효종의 장례에서 대비가 상복을 몇 년 입을지를 두고 벌어진 논쟁 / 서인과 남인",ex:"단순한 예법 논쟁이 아니라 둘째 아들로 왕위에 오른 효종의 <b>정통성</b>에 대한 견해 차이였습니다. (139쪽)"},
+{u:"b",t:"개념",q:"숙종 때 ‘환국’으로 붕당 정치는 어떻게 변질되었나요?",a:"집권 붕당이 수시로 바뀌고, 한 붕당이 권력을 독점하며 다른 붕당은 밀려남",ex:"서인은 이 과정에서 <b>노론과 소론</b>으로 나뉘었고, 3사의 언론 기능도 자기 붕당만 대변하게 되었습니다. (139쪽)"},
+{u:"b",t:"개념",q:"영조의 탕평책과 개혁 정치를 쓰세요.",a:"탕평파 육성, 탕평비 건립, 이조 전랑 권한 약화, 서원 정리 / 균역법, 가혹한 형벌 금지, 청계천 정비, 『속대전』 편찬",ex:"탕평비는 붕당을 없애려는 의지를 보이려고 성균관 앞에 세웠습니다. (140쪽)"},
+{u:"b",t:"개념",q:"정조의 개혁 정책을 쓰세요.",a:"규장각 정비, 초계 문신제, 장용영 설치, 수원 화성 건설, 서얼을 규장각 관리로 등용, 『대전통편』 편찬",ex:"정조는 남인과 소론도 적극 등용했습니다. 화성 건설에는 정약용이 만든 <b>거중기</b>가 쓰였습니다. (141쪽)"},
+{u:"b",t:"개념",q:"탕평 정치의 한계는?",a:"붕당 자체를 없앤 것이 아니라 강한 왕권으로 다툼을 일시적으로 누른 것이라, 권력이 왕과 소수 집단에 집중되어 세도 정치의 배경이 됨",ex:"(141쪽)"},
+{u:"b",t:"개념",q:"‘세도 정치’란? 어느 왕 때부터 몇 년 동안 이어졌나요?",a:"왕실과 혼인한 몇몇 가문(안동 김씨 등)이 권력을 장악한 정치 / 순조·헌종·철종 60여 년",ex:"세도 가문이 비변사 등 주요 관직을 차지해 왕권이 약해지고, 과거 부정과 매관매직이 퍼졌습니다. (142쪽)"},
+{u:"b",t:"개념",q:"삼정의 문란에서 ‘삼정’ 세 가지와, 가장 폐해가 심했던 것은?",a:"전정(토지세)·군정(군포)·환정(환곡) / 환곡",ex:"환곡은 봄에 곡식을 빌려주고 가을에 이자를 붙여 받는 제도인데, 고리대처럼 운영되었습니다. 정부는 <b>암행어사</b>를 보냈지만 근본 해결은 못 했습니다. (143쪽)"},
+{u:"b",t:"비교",q:"홍경래의 난과 임술 농민 봉기를 비교하세요.",a:"홍경래의 난(1811): 몰락 양반 홍경래가 평안도 차별에 맞서 봉기, 청천강 이북 5개월 장악, 정주성에서 진압 / 임술 농민 봉기(1862): 단성·진주에서 시작해 전국 확산, 삼정 문란 시정 요구",ex:"정부는 <b>삼정이정청</b>을 설치했지만 큰 성과가 없었습니다. 『정감록』 같은 예언 사상도 이 시기 유행했습니다. (144~145쪽)"},
+{u:"b",t:"개념",q:"조선 후기 상업에서 ‘도고’와 ‘사상’은?",a:"도고: 독점적 도매 상인 / 사상: 국가 허락 없이 상업 활동을 한 상인",ex:"대표 사상: 경강상인, 송상(개성), 만상(의주), 내상(동래). 지방에는 장시가 1천여 개로 늘고 <b>보부상</b>이 활동했습니다. 동전 <b>상평통보</b>가 널리 쓰였습니다. (149쪽)"},
+{u:"b",t:"자료",q:"박지원의 『허생전』에서 허생은 과일을 몽땅 사들였다가 열 배 값에 팔았다. 이처럼 물건을 사재기하는 상인을 무엇이라 하나요?",a:"도고 (독점적 도매 상인)",ex:"이런 매점매석은 물가를 올려 백성을 어렵게 만드는 문제가 있습니다. 『허생전』은 조선 후기 상업의 발달 모습을 보여 줍니다. (149쪽)"},
+{u:"b",t:"비교",q:"조선 전기와 후기의 재산 상속·제사를 비교하세요.",a:"전기: 자녀에게 고르게 상속, 제사도 돌아가며 / 후기: 큰아들 우대(장자 중심), 딸과 다른 아들은 권리를 잃음",ex:"17세기 이후 부계 중심 가족 제도가 자리 잡아 양자 들이기가 일반화되고, <b>족보</b> 편찬과 <b>동성 마을</b>이 늘었습니다. (150쪽)"},
+{u:"b",t:"O / X",q:"맞으면 O, 틀리면 X",en:"조선 후기에는 혼례 후 신랑이 오랫동안 신부 집에서 생활하는 경우가 많아졌다.",a:"X",ex:"그것은 조선 <b>전기</b>까지의 모습입니다. 후기에는 혼례 후 곧바로 <b>신부가 신랑 집</b>에 가서 사는 경우가 많아졌습니다. 과부의 재가 금지와 열녀 표창이 강화되어 여성 지위는 더 낮아졌습니다. (151쪽)"},
+{u:"b",t:"개념",q:"조선 후기 상민이 양반이 되려 한 방법과 까닭은?",a:"공명첩 구입, 납속, 족보 구매·위조 / 군포 면제와 수탈에서 벗어나려고",ex:"그 결과 양반 수는 늘고 상민 수는 크게 줄었습니다. (152쪽)"},
+{u:"b",t:"개념",q:"‘노비종모법’이란?",a:"아버지가 노비라도 어머니가 양인이면 자녀를 양인으로 하는 법",ex:"상민이 줄어 군역 대상자가 부족해지자 실시했습니다. 순조 때는 공노비 수만 명을 해방했습니다. 서얼은 정조 때 <b>규장각 검서관</b>(유득공·박제가·이덕무)으로 진출했고, 기술직 중인은 <b>소청 운동</b>을 벌였습니다. (152~153쪽)"},
+{u:"b",t:"개념",q:"‘연행사’와 ‘통신사’는?",a:"연행사: 청(베이징)에 간 사신 / 통신사: 일본(에도 막부)에 간 사신",ex:"연행사는 서양 문물을 들여왔고, 통신사는 19세기 초까지 12차례 파견되어 문화 교류에 기여했습니다. 일본과는 <b>기유약조(1609)</b>로 교역을 재개했습니다. (156쪽)"},
+{u:"b",t:"비교",q:"천주교(서학)와 동학을 비교하세요.",a:"천주교: 18세기 후반 남인 학자들이 신앙으로 수용, 제사 거부로 탄압 / 동학: 몰락 양반 최제우 창시, 인내천(사람이 곧 하늘) 사상, 신분 질서 비판",ex:"동학은 천주교와 서양 세력에 반대했으며, 정부는 최제우를 처형했습니다. 마테오 리치의 「곤여만국전도」는 중국 중심 세계관에서 벗어나는 데 영향을 주었습니다. (157쪽)"},
+{u:"b",t:"비교",q:"실학의 두 흐름을 비교하세요.",a:"농업 중심 개혁론(유형원·이익·정약용): 토지 재분배 / 상공업 중심 개혁론·북학파(유수원·박지원·박제가): 상공업 진흥, 기술 개발, 청과의 교류",ex:"정약용은 마을 공동 농장의 <b>여전론</b>, 이익은 매매를 금지한 <b>영업전</b>을 주장했습니다. 박지원은 수레·선박·화폐 사용과 『양반전』, 박제가는 소비를 늘려 생산을 자극하자고 했습니다. 북학파의 주장은 개화사상으로 이어졌습니다. (158~159쪽)"},
+{u:"b",t:"연결",q:"국학 연구의 인물과 업적을 연결하세요.",en:"(1) 안정복   (2) 김정호   (3) 신경준",a:"(1) 『동사강목』 (2) 「대동여지도」 (3) 『훈민정음운해』",ex:"이중환은 인문 지리지 『택리지』를 썼습니다. 대동여지도는 22첩으로 접어 책처럼 들고 다닐 수 있었습니다. (159쪽)"},
+
+/* ---------- 근현대 ---------- */
+{u:"c",t:"개념",q:"강화도 조약(1876)의 의의와 문제점은?",a:"조선이 외국과 맺은 최초의 근대적 조약 / 불평등한 내용 포함",ex:"일본이 운요호 사건을 일으킨 뒤 맺었습니다. 흥선 대원군은 두 차례 양요 후 <b>척화비</b>를 세워 통상 거부 의지를 알렸습니다. (168쪽)"},
+{u:"c",t:"개념",q:"갑신정변(1884)을 일으킨 세력과 주장, 결과는?",a:"김옥균·박영효 등 급진 개화파 / 청과의 사대 관계 청산, 인민 평등권, 조세 개혁 / 청군 개입으로 3일 만에 실패",ex:"우정총국 개국 축하연을 기회로 일으켰으며, 근대 국가를 만들려 한 최초의 정치 개혁 운동입니다. (169쪽)"},
+{u:"c",t:"개념",q:"동학 농민 운동의 성격 두 가지는?",a:"반봉건(안으로 사회 개혁) / 반외세(밖으로 외세 침략 저지)",ex:"고부 농민 봉기 후 전봉준 중심으로 보국안민을 내세워 전주성 점령 → 전주 화약, 집강소 설치 → 일본의 경복궁 점령에 재봉기 → 패배. 요구는 갑오개혁에 일부 반영되었습니다. (169쪽)"},
+{u:"c",t:"개념",q:"갑오·을미개혁의 주요 내용은?",a:"갑오개혁: 군국기무처 설치, 신분제 폐지, 과부 재가 허용, 과거제 폐지, 홍범 14조 / 을미개혁: 태양력 사용, 단발령",ex:"을미개혁은 명성 황후 시해(을미사변) 이후 추진되었습니다. (170쪽)"},
+{u:"c",t:"개념",q:"독립 협회의 활동을 쓰세요.",a:"독립신문 창간(서재필), 독립문 건립, 만민 공동회 개최, 관민 공동회에서 헌의 6조 결의, 의회 설립 추진",ex:"보수 세력의 모함으로 강제 해산되었습니다. 독립신문은 최초의 민간 신문으로 한글판과 영문판이 있었습니다. (170~171쪽)"},
+{u:"c",t:"개념",q:"대한 제국(1897)의 개혁 원칙과 정책은?",a:"구본신참(옛것을 근본으로 새것을 참고) / 대한국 국제 제정(황제권 강화), 상공업 진흥, 지계 발급",ex:"고종은 아관 파천 후 환궁해 황제로 즉위했습니다. 이후 을사늑약(1905)으로 외교권을 빼앗기고 1910년 강제 병합되었습니다. (171쪽)"},
+{u:"c",t:"순서",q:"일제의 통치 방식을 순서대로 쓰세요.",a:"무단 통치(헌병 경찰) → 문화 통치(3·1 운동 이후) → 민족 말살 통치(1930년대, 황국 신민화 정책)",ex:"문화 통치는 불만을 잠재우고 민족을 분열시키려는 목적이었습니다. (172쪽)"},
+{u:"c",t:"개념",q:"3·1 운동의 결과로 수립된 정부와 그 특징은?",a:"대한민국 임시 정부(상하이) / 우리나라 최초로 삼권 분립에 따른 민주 공화정 체제",ex:"윌슨의 민족 자결주의가 3·1 운동에 영향을 주었습니다. (172쪽)"},
+{u:"c",t:"연결",q:"1920년대 민족 운동을 연결하세요.",en:"(1) ‘내 살림 내 것으로’   (2) 순종 장례일 만세 시위   (3) 민족주의·사회주의 연합 단체   (4) 1929년 광주 학생 시위",a:"(1) 물산 장려 운동 (2) 6·10 만세 운동 (3) 신간회 (4) 광주 학생 항일 운동",ex:"민립 대학 설립 운동은 일제 방해로 실패했습니다. 신간회는 자치론에 반대하며 1927년 창립되었습니다. (173쪽)"},
+{u:"c",t:"연결",q:"무장 독립 투쟁과 인물을 연결하세요.",en:"(1) 봉오동 전투   (2) 청산리 대첩   (3) 의열단   (4) 한인 애국단",a:"(1) 홍범도 (2) 김좌진 (3) 김원봉 (4) 김구(이봉창, 윤봉길)",ex:"윤봉길의 훙커우 공원 의거로 임시 정부가 중국 정부의 지원을 받게 되었습니다. 임시 정부는 충칭에서 지청천을 총사령관으로 <b>한국 광복군</b>(1940)을 창설했습니다. (174~175쪽)"},
+{u:"c",t:"개념",q:"국채 보상 운동이란?",a:"일본에 진 빚 1,300만 원을 국민이 모금해 갚아 국권을 지키자는 운동 (대구에서 시작)",ex:"독립 협회는 이권 수호 운동, 보안회는 일본의 황무지 개간권 요구 반대 운동을 벌였습니다. (190쪽)"},
+{u:"c",t:"연결",q:"일제의 경제 수탈 정책과 결과를 연결하세요.",en:"(1) 토지 조사 사업   (2) 산미 증식 계획   (3) 병참 기지화 정책",a:"(1) 총독부 지세 수입 증가, 소작농의 경작권 불안 (2) 증산량보다 많은 쌀이 일본으로 유출, 식량 사정 악화 (3) 군수 공업이 북부에 치우침, 식량·쇠붙이 수탈",ex:"이에 맞서 농민은 소작 쟁의, 노동자는 노동 쟁의를 벌였습니다. 강주룡의 을밀대 지붕 시위는 한국 최초의 노동자 고공 투쟁입니다. (191쪽)"}
+];
+
+const stage=document.getElementById('stage'),front=document.getElementById('front'),back=document.getElementById('back');
+const countEl=document.getElementById('count'),barEl=document.getElementById('bar');
+const prevB=document.getElementById('prev'),nextB=document.getElementById('next'),flipB=document.getElementById('flipbtn');
+Q.forEach((q,i)=>q.id=i+1);
+
+let marks={};
+try{marks=JSON.parse(localStorage.getItem('his3-mid-marks')||'{}')||{}}catch(e){marks={}}
+function saveMarks(){try{localStorage.setItem('his3-mid-marks',JSON.stringify(marks))}catch(e){}}
+
+let filter='all',list=Q.slice(),idx=0,shuffled=false;
+const lc=u=>({a:'var(--lp)',b:'var(--lc2)',c:'var(--lg)'})[u];
+
+function build(){
+  if(filter==='all')list=Q.slice();
+  else if(filter==='again')list=Q.filter(q=>marks[q.id]==='again');
+  else list=Q.filter(q=>String(q.u)===filter);
+  if(shuffled){for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}}
+  idx=0;render();
+}
+function metaHTML(q){
+  const m=marks[q.id];
+  const done=m==='ok'?'<span class="done ok">✓ 맞음</span>':m==='again'?'<span class="done again">↺ 다시 볼 문제</span>':'';
+  return `<div class="meta"><span class="lesson">${UL[q.u]}</span><span class="tag">${q.t}</span><span>${q.id}번</span>${done}</div>`;
+}
+function fmtA(a){return a.replace(/\s+(?=\([0-9]\)|㉡|㉢)/g,'<br>').replace(/\s\/\s/g,'<br>')}
+function render(){
+  stage.classList.remove('flipped');flipB.textContent='정답 보기';
+  const n=list.length;
+  if(!n){
+    front.style.setProperty('--lc','var(--line)');back.style.setProperty('--lc','var(--line)');
+    front.innerHTML='<div class="empty">다시 볼 문제가 아직 없습니다.<br>카드 뒷면에서 “다시 볼래요”를 누르면 여기에 모입니다.</div>';
+    back.innerHTML='';countEl.innerHTML='<b>0</b> / 0';barEl.style.width='0';
+    prevB.disabled=nextB.disabled=flipB.disabled=true;return;
+  }
+  flipB.disabled=false;
+  const q=list[idx];
+  front.style.setProperty('--lc',lc(q.u));back.style.setProperty('--lc',lc(q.u));
+  const opts=q.opts?`<ol class="opts">${q.opts.map((o,i)=>`<li><span>${'①②③④⑤'[i]}</span>${o}</li>`).join('')}</ol>`:'';
+  const en=q.en?`<div class="en">${q.en}</div>`:'';
+  front.innerHTML=`${metaHTML(q)}<p class="q">${q.q}</p>${en}${opts}<div class="hint">카드를 누르면 정답이 나와요 · 옆으로 밀면 다음 문제</div>`;
+  back.innerHTML=`${metaHTML(q)}<div class="alabel">정답</div><p class="answer">${fmtA(q.a)}</p><p class="ex">${q.ex}</p>
+    <div class="marks"><button class="mark again" id="m-again" data-m="again">↺ 다시 볼래요</button><button class="mark ok" id="m-ok" data-m="ok">✓ 맞았어요</button></div>`;
+  front.scrollTop=0;back.scrollTop=0;
+  countEl.innerHTML=`<b>${idx+1}</b> / ${n}`;
+  barEl.style.width=((idx+1)/n*100)+'%';
+  prevB.disabled=idx===0;nextB.disabled=idx===n-1;
+}
+function flip(){if(!list.length)return;const f=stage.classList.toggle('flipped');flipB.textContent=f?'문제 보기':'정답 보기'}
+function go(d){const j=idx+d;if(j<0||j>=list.length)return;idx=j;render()}
+
+stage.addEventListener('click',e=>{
+  const m=e.target.closest('.mark');
+  if(m){e.stopPropagation();const q=list[idx];marks[q.id]=m.dataset.m;saveMarks();
+    if(filter==='again'&&m.dataset.m==='ok'){const keep=idx;list=Q.filter(x=>marks[x.id]==='again');idx=Math.min(keep,Math.max(list.length-1,0));render();return}
+    if(idx<list.length-1)go(1);else render();return}
+  flip();
+});
+stage.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();flip()}});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+flipB.onclick=flip;prevB.onclick=()=>go(-1);nextB.onclick=()=>go(1);
+
+let sx=0,sy=0;
+stage.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){go(dx<0?1:-1)}},{passive:true});
+
+document.querySelectorAll('.chip[data-f]').forEach(c=>c.onclick=()=>{
+  filter=c.dataset.f;document.querySelectorAll('.chip[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===c));build()});
+document.getElementById('shuffle').onclick=function(){shuffled=!shuffled;this.setAttribute('aria-pressed',shuffled);this.textContent=shuffled?'섞음 ✓':'섞기';build()};
+
+build();
+</script>
+
+</body>
+</html>
