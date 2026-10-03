@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*{box-sizing:border-box}[hidden]{display:none!important}</style>
+<title>중3 사회 중간고사 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen flashcard app — top filter bar, one flip card filling the middle, fixed nav bar at the bottom */
+:root{
+  --bg:#E9EDF2; --card:#FFFFFF; --ink:#1B2430; --muted:#5D6878; --line:#D3D9E1;
+  --lp:#C2552D; --lc2:#2F6FB0; --lg:#13857A;
+  --ok:#1F8A4C; --again:#C2410C; --back:#F6F8FB;
+  --font-ui:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-en:"Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161D; --card:#1B222C; --ink:#E8EDF3; --muted:#9AA5B4; --line:#2E3845;
+  --lp:#F08A62; --lc2:#7DB1EA; --lg:#3FC2B2; --ok:#4BC27E; --again:#F2875A; --back:#151B23; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.55;margin:0;word-break:keep-all;overflow-wrap:anywhere}
+.app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding-inline:16px;box-sizing:border-box}
+header{padding-block:12px 8px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.count b{color:var(--ink);font-size:16px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 14px var(--font-ui);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip:focus-visible,.navbtn:focus-visible,.mark:focus-visible,.stage:focus-visible{outline:3px solid var(--lg);outline-offset:2px}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);width:0;transition:width .25s}
+
+.stage{flex:1;min-height:0;perspective:1400px;position:relative;margin-block:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:18px}
+.flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.stage.flipped .flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;border:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column;box-sizing:border-box;padding:20px 20px 18px}
+.front{background:var(--card)}
+.back{background:var(--back);transform:rotateY(180deg)}
+.face::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--lc);border-radius:18px 0 0 18px}
+.meta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.lesson{color:var(--lc);font-weight:700;letter-spacing:.04em}
+.tag{border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-weight:500}
+.done{margin-left:auto;font-weight:500}
+.done.ok{color:var(--ok)} .done.again{color:var(--again)}
+.q{font-size:18px;font-weight:500;margin:16px 0 0;text-wrap:pretty}
+.en{font-family:var(--font-en);font-size:17px;line-height:1.6;background:var(--back);border-radius:10px;padding:12px 14px;margin:12px 0 0;white-space:pre-line}
+.back .en{background:var(--card)}
+.opts{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:8px}
+.opts li{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-family:var(--font-ui);font-size:16px;line-height:1.45}
+.opts li span{font-family:var(--font-ui);font-weight:700;color:var(--muted);flex:none}
+.hint{margin-top:auto;padding-top:16px;text-align:center;font-size:13px;color:var(--muted)}
+.alabel{font-size:13px;font-weight:700;color:var(--lc);letter-spacing:.06em;margin-top:16px}
+.answer{font-family:var(--font-ui);font-size:20px;font-weight:700;line-height:1.35;margin:4px 0 0;text-wrap:balance}
+.ex{margin:14px 0 0;font-size:15.5px;line-height:1.65;text-wrap:pretty}
+.ex em{font-style:normal;font-family:var(--font-en);font-weight:700}
+.marks{display:flex;gap:8px;margin-top:auto;padding-top:16px}
+.mark{flex:1;border:1.5px solid currentColor;background:transparent;border-radius:12px;padding:11px 8px;font:700 15px var(--font-ui);cursor:pointer}
+.mark.ok{color:var(--ok)} .mark.again{color:var(--again)}
+
+nav{display:flex;gap:10px;padding-block:6px calc(12px + env(safe-area-inset-bottom,0px))}
+.navbtn{flex:1;border:none;border-radius:14px;padding:14px 8px;font:700 16px var(--font-ui);cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.navbtn.main{flex:1.4;background:var(--ink);color:var(--card);border-color:var(--ink)}
+.navbtn:disabled{opacity:.4;cursor:default}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:24px}
+@media (prefers-reduced-motion: reduce){.flip{transition:none}.bar i{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <h1>중3 사회 중간고사 퀴즈</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="chips" role="group" aria-label="범위 선택">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">전체 50</button>
+      <button class="chip" id="f-p" data-f="p" aria-pressed="false">인구</button>
+      <button class="chip" id="f-c" data-f="c" aria-pressed="false">도시</button>
+      <button class="chip" id="f-g" data-f="g" aria-pressed="false">글로벌 경제</button>
+      <button class="chip" id="f-again" data-f="again" aria-pressed="false">다시 볼 문제</button>
+      <button class="chip" id="shuffle" aria-pressed="false">섞기</button>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </header>
+
+  <div class="stage" id="stage" tabindex="0" role="button" aria-label="카드를 눌러 정답 보기">
+    <div class="flip">
+      <section class="face front" id="front"></section>
+      <section class="face back" id="back"></section>
+    </div>
+  </div>
+
+  <nav>
+    <button class="navbtn" id="prev">◀ 이전</button>
+    <button class="navbtn main" id="flipbtn">정답 보기</button>
+    <button class="navbtn" id="next">다음 ▶</button>
+  </nav>
+</div>
+
+<script>
+const L = {p:"인구 변화와 인구 문제 · 121~139쪽", c:"사람이 만든 삶터, 도시 · 140~159쪽", g:"글로벌 경제 활동과 지역 변화 · 166~173쪽"};
+const UL = {p:"인구", c:"도시", g:"경제"};
+const Q = [
+/* ---------- 인구 (121~139쪽) ---------- */
+{u:"p",t:"개념",q:"인구 밀도는 어떻게 구하나요?",a:"총인구 ÷ 국토 면적",ex:"인구 밀도는 <b>1㎢의 면적에 몇 명이 사는지</b>를 나타냅니다. 방글라데시는 기온이 높고 강수량이 많아 벼농사가 발달해 인구 밀도가 높고, 몽골은 건조한 초원이라 유목 생활을 해서 인구 밀도가 낮습니다. (122쪽)"},
+{u:"p",t:"O / X",q:"맞으면 O, 틀리면 X",en:"전 세계 인구는 지구상에 고르게 분포한다.",a:"X",ex:"세계 인구는 고르게 퍼져 있지 않고 <b>특정 지역에 집중</b>합니다. 세계 인구의 <b>90% 이상이 북반구</b>에 살고, 위도로는 <b>북위 20°~40°</b> 지역에 가장 많이 삽니다. 적도 부근과 극지방은 인구가 적습니다. (123쪽)"},
+{u:"p",t:"개념",q:"자연적 요인 때문에 인구가 밀집한 대표 지역은 어디이며, 왜 인구가 많을까요?",a:"동아시아~남아시아의 벼농사 지역",ex:"<b>계절풍 기후</b>가 나타나고 <b>하천 유역에 넓은 평야</b>가 발달해 벼농사와 사람이 살기에 유리하기 때문입니다. (123쪽)"},
+{u:"p",t:"선택",q:"인구가 희박한 지역과 그 이유가 <b>잘못</b> 짝지어진 것은?",opts:["사하라 사막 – 건조해서 물이 부족하다","캐나다 북부 – 너무 춥다","아마존 분지 – 고온 다습하고 밀림이 우거져 있다","히말라야산맥 – 지형이 높고 가파르다","서부 유럽 – 일자리와 산업 시설이 부족하다"],a:"⑤ 서부 유럽",ex:"서부 유럽은 일찍부터 산업이 발달한 <b>인구 밀집 지역</b>입니다. 인문적 요인(경제·교통·산업)으로 인구가 모인 곳이에요. (123~124쪽)"},
+{u:"p",t:"개념",q:"산업 혁명 이후 인구 분포에 큰 영향을 준 요인은? 그 결과 인구가 밀집한 지역 세 곳은?",a:"인문적 요인(경제·교통·산업 등)",ex:"일자리가 풍부하고, 교육·문화 시설이 잘 갖춰지고, 교통이 편리한 곳에 인구가 모입니다. 대표 지역: <b>서부 유럽, 미국 북동부 대서양 연안, 일본 태평양 연안</b>. 반대로 전쟁·분쟁이 잦은 곳은 인구 밀도가 낮습니다. (124쪽)"},
+{u:"p",t:"빈칸",q:"빈칸에 알맞은 말은?",en:"과거 우리나라 인구는 평야가 발달한 ( ㉠ ) 지역에 밀집하였지만, 1960년대 산업화 이후 촌락 인구가 도시로 이동하는 ( ㉡ ) 현상이 나타나 현재는 인구의 약 절반이 ( ㉢ )에 살고 있다.",a:"㉠ 남서부  ㉡ 이촌 향도  ㉢ 수도권",ex:"기온이 낮고 산지가 많은 <b>북동부</b>는 인구가 적었습니다. 지금은 수도권, 부산·대구·광주 같은 대도시, <b>남동 임해 공업 지역</b>에 인구가 많고, 태백산맥·소백산맥 산지와 농어촌은 인구 밀도가 낮습니다. (125쪽)"},
+{u:"p",t:"개념",q:"다음은 배출 요인일까, 흡인 요인일까?",en:"높은 임금, 풍부한 일자리, 쾌적한 주거 환경, 다양한 교육·문화 시설",a:"흡인 요인",ex:"<b>흡인 요인</b>은 인구를 끌어들이는 요인, <b>배출 요인</b>은 인구를 밀어내는 요인입니다. 배출 요인 예: 낮은 임금, 열악한 주거 환경, 빈곤, 교육·문화 시설 부족, 전쟁, 자연재해. (127쪽)"},
+{u:"p",t:"선택",q:"인구 이동의 국제 이동 중 <b>강제적 이동</b>에 해당하는 것은?",opts:["영국 청교도들이 종교의 자유를 찾아 미국으로 이동","중국인들이 경제적 어려움을 해결하려 동남아시아로 이동","아프리카 흑인들이 아메리카 농장·광산에 노동력으로 끌려감","필리핀 노동자들이 일자리를 찾아 해외로 이동"],a:"③ 아프리카 흑인의 강제 이주",ex:"신항로 개척 이후 아메리카에 정착한 유럽인들이 부족한 노동력을 채우려고 아프리카 흑인을 <b>강제로</b> 이주시켰습니다. 내전·분쟁으로 생기는 <b>난민</b>(예: 남수단)도 강제적 이동에 가깝습니다. (127~128쪽)"},
+{u:"p",t:"개념",q:"오늘날 인구의 국제 이동은 주로 어떤 목적으로, 어디에서 어디로 이동하나요?",a:"경제적 목적 / 개발 도상국 → 선진국",ex:"아시아·아프리카·라틴 아메리카의 개발 도상국에서 <b>서부 유럽, 앵글로아메리카</b> 등 선진국으로 이동합니다. (127쪽)"},
+{u:"p",t:"비교",q:"국제 이동의 영향 중 <b>인구가 유출되는 개발 도상국</b>에서 나타나는 문제는?",opts:["원주민과 이주민 사이의 문화 갈등","저임금 노동력의 확보","청장년층과 고급 기술 인력의 감소","외화 유출"],a:"③ 청장년층과 고급 기술 인력의 감소",ex:"개발 도상국: 실업률이 낮아지고 <b>외화가 들어와</b> 경제에 도움이 되지만, 일할 사람과 고급 인력이 빠져나갑니다. 선진국: 저임금 노동력을 얻지만 원주민과 이주민 사이에 갈등이 생길 수 있습니다. (127쪽)"},
+{u:"p",t:"개념",q:"‘역도시화 현상’이란?",a:"대도시의 인구가 주변 지역이나 촌락으로 이동하는 현상",ex:"대도시의 주거 환경이 나빠지고 교통·통신이 발달하면서, <b>선진국</b>에서는 쾌적한 환경을 찾아 도시를 떠나는 사람이 늘어납니다. 반대로 <b>개발 도상국</b>에서는 일자리가 많은 도시로 몰리는 <b>이촌 향도</b>가 활발합니다. (127쪽)"},
+{u:"p",t:"연결",q:"우리나라 국내 인구 이동을 시기와 바르게 연결하세요.",en:"(1) 광공업이 발달한 함경도 지방으로 이동\n(2) 북한에서 남부 지방으로 피난\n(3) 서울·대도시·공업 도시로 이동\n(4) 대도시에서 주변 신도시·촌락으로 이동",a:"(1) 일제 강점기 (2) 6·25 전쟁 (3) 1960~1980년대 (4) 1990년대 이후",ex:"1960년대 이후 이촌 향도로 수도권, 부산·대구, <b>울산·포항</b> 같은 신흥 공업 도시로 이동했습니다. 1990년대 이후에는 교통 혼잡·집값 상승·환경 오염 때문에 대도시 주변 <b>신도시</b>로 이동하기도 합니다. (130쪽)"},
+{u:"p",t:"개념",q:"개발 도상국에서 나타나는 인구 문제와 그 대책을 쓰세요.",a:"인구 급증(→ 기아·빈곤, 도시 과밀), 성비 불균형",ex:"사망률은 낮아졌는데 출생률은 여전히 높아 인구가 급증했습니다. 경제 성장이 인구 증가를 못 따라가 <b>기아·빈곤</b>이 생기고, 도시로 몰려 주택 부족·교통 혼잡이 생깁니다. 아시아 일부 국가는 남아 선호로 <b>성비 불균형</b>이 심각합니다. 대책: <b>출산 억제 정책</b>, 농업 기계화·산업화(인구 부양력 높이기), 촌락 생활 환경 개선. (133쪽)"},
+{u:"p",t:"개념",q:"선진국에서 나타나는 인구 문제와 그 대책은?",a:"저출산·고령화 → 노동력 부족, 노인 부양 부담 증가",ex:"여성의 사회 활동 증가로 출산율이 낮아지고, 의료 기술 발달로 평균 수명이 늘었습니다. 대책: <b>출산 장려 정책</b>, 노인 재취업 기회, <b>정년 연장</b>, 연금 제도 개선 등 노인 복지 강화. 부족한 노동력을 외국인 근로자로 채우며 문화 갈등이 생기기도 합니다. (134쪽)"},
+{u:"p",t:"빈칸",q:"빈칸에 알맞은 숫자는?",en:"65세 이상 인구가 전체 인구의 ( ㉠ )%를 넘으면 고령화 사회, ( ㉡ )%를 넘으면 고령 사회, ( ㉢ )%를 넘으면 초고령 사회라고 한다.",a:"㉠ 7  ㉡ 14  ㉢ 20",ex:"우리나라는 이미 <b>2000년에 고령화 사회</b>로 진입했습니다. (134~135쪽)"},
+{u:"p",t:"선택",q:"우리나라 <b>저출산</b> 현상의 원인으로 알맞지 <b>않은</b> 것은?",opts:["여성의 사회 참여 증가","결혼 연령 상승","주택 마련 비용과 사교육비 증가","의학 기술 발달로 평균 수명 증가"],a:"④ 평균 수명 증가",ex:"평균 수명 증가는 <b>고령화</b>의 원인입니다. 저출산 원인: 여성 사회 참여 증가, 결혼 연령 상승, 출산 기피, 주택 비용·육아 부담·사교육비 증가, 개인주의 가치관 확산. 우리나라는 1960년대부터 인구 증가를 막는 정책을 폈습니다(“딸·아들 구별 말고 둘만 낳아 잘 기르자”). (135, 139쪽)"},
+{u:"p",t:"자료",q:"인구 피라미드를 비교했을 때 <b>앙골라(개발 도상국)</b>의 특징으로 알맞은 것은?",opts:["출생률이 낮고 노년층 비율이 높다","출생률이 높고 유소년층 비율이 높으며 평균 수명이 짧다","출생률과 사망률이 모두 낮다","노년층 비율이 높고 평균 수명이 길다"],a:"② 출생률 높음, 유소년층 비율 높음, 평균 수명 짧음",ex:"앙골라는 아래가 넓은 <b>피라미드형</b>, 독일은 출생률·사망률이 낮고 노년층 비율이 높은 형태입니다. 인구 피라미드는 세로축이 나이, 가로축 왼쪽이 남자·오른쪽이 여자입니다. (134쪽)"},
+
+/* ---------- 도시 (140~159쪽) ---------- */
+{u:"c",t:"O / X",q:"맞으면 O, 틀리면 X",en:"도시는 인구 밀도가 낮고 1차 산업에 종사하는 사람이 많다.",a:"X",ex:"도시는 좁은 지역에 많은 사람이 모여 <b>인구 밀도가 높고</b>, 토지 이용이 <b>집약적</b>이며, <b>2·3차 산업</b> 종사자가 많습니다. 주변 지역에 상품과 서비스를 제공하는 <b>중심지</b> 역할을 합니다. (143쪽)"},
+{u:"c",t:"개념",q:"역사상 최초의 도시는 언제, 어디에서 발달했나요?",a:"기원전 3,500년 무렵, 티그리스강·유프라테스강 유역(오늘날 이라크)",ex:"농업에 유리한 문명의 발상지에서 생겼습니다. 이후 <b>중세</b>에는 시장 중심의 상업 도시, <b>산업 혁명</b> 이후에는 <b>석탄 산지</b> 중심의 공업 도시, 20세기 이후에는 첨단 산업·서비스·문화 기능을 하는 도시가 발달했습니다. (143쪽)"},
+{u:"c",t:"개념",q:"‘세계 도시’란 무엇이고, 대표적인 도시 세 곳은?",a:"세계적 영향력을 가진 금융 기관, 다국적 기업 본사, 국제기구가 모인 도시 / 뉴욕·런던·도쿄",ex:"세계 경제·문화·정치의 중심지 역할을 합니다. (145쪽)"},
+{u:"c",t:"연결",q:"도시와 기능을 바르게 연결하세요.",en:"(1) 로마   (2) 상하이   (3) 뉴욕",a:"(1) 역사·문화 도시 (2) 산업·물류 도시 (3) 국제 금융·업무 도시",ex:"로마는 고대·중세·르네상스 유적이 많고, 상하이는 세계 1위 규모의 항만이 있는 국제 물류 중심지, 뉴욕은 국제 연합(UN) 본부가 있는 금융 중심지입니다. (144쪽)"},
+{u:"c",t:"개념",q:"‘도시 내부의 지역 분화’란?",a:"도시가 커지면서 비슷한 기능끼리 모여 중심 업무 지역·상업 지역·공업 지역·주거 지역으로 나뉘는 현상",ex:"도시가 작을 때는 관공서·상점·주택·공장이 섞여 있지만, 커지면 같은 기능은 모이고 다른 기능은 떨어져 나갑니다. (147쪽)"},
+{u:"c",t:"개념",q:"도시 내부의 지역 분화를 일으키는 가장 큰 두 가지 원인은?",a:"접근성과 지대",ex:"<b>접근성</b>: 어느 장소에 도달하기 쉬운 정도. <b>지대</b>: 토지를 이용해 얻는 수익 또는 빌린 대가. 교통이 편리할수록 접근성이 높고, 접근성이 높을수록 땅값(지가)이 비쌉니다. (147쪽)"},
+{u:"c",t:"비교",q:"집심 현상과 이심 현상을 구별하세요.",a:"집심: 중심 업무·상업 기능이 도심으로 모임 / 이심: 주택·학교·공장이 외곽으로 빠져나감",ex:"도심은 땅값이 비싸서 비싼 땅값을 내고도 이익을 내는 업무·상업 기능만 남습니다. 넓은 땅이 필요한 공장이나 주택은 땅값이 싼 외곽으로 갑니다. (147쪽)"},
+{u:"c",t:"개념",q:"도심에서 나타나는 ‘인구 공동화 현상’이란?",a:"낮에는 사람이 많지만 밤에는 주거지로 돌아가 도심 인구가 크게 줄어드는 현상",ex:"도심은 주거 기능이 약해 <b>낮과 밤의 인구 밀도 차이</b>가 큽니다. 그래서 출퇴근 시간에 교통 혼잡이 생깁니다. (148쪽)"},
+{u:"c",t:"개념",q:"부도심은 어디에 발달하며, 어떤 역할을 하나요?",a:"도심과 주변 지역을 잇는 교통이 편리한 곳 / 도심의 상업·서비스 기능을 나눠 교통 혼잡을 줄임",ex:"서울의 강남이 대표적인 부도심입니다. 백화점·금융 기관·편의 시설이 들어섭니다. (148~149쪽)"},
+{u:"c",t:"선택",q:"도시 내부 구조에 대한 설명으로 옳지 <b>않은</b> 것은?",opts:["도심에는 행정·금융 기관과 대기업 본사가 모여 있다","중간 지역에는 오래된 주택·상가·공장이 섞여 있다","주변 지역에는 주거 단지와 녹지가 있다","개발 제한 구역은 도시를 빠르게 넓히기 위해 설정한다"],a:"④",ex:"<b>개발 제한 구역(그린벨트)</b>은 도시가 무질서하게 커지는 것을 <b>막고</b> 녹지 공간을 확보하려고 설정합니다. (148쪽)"},
+{u:"c",t:"개념",q:"‘위성 도시’란?",a:"대도시 인근에서 주거·공업·행정 등 대도시의 기능 일부를 나눠 맡는 도시",ex:"교통이 편리한 대도시 주변에 있습니다. (148쪽)"},
+{u:"c",t:"자료",q:"브라질 리우데자네이루에서 산비탈을 따라 형성된 저급 주택 지역을 무엇이라 부르나요?",a:"파벨라(favela)",ex:"경치 좋고 교통이 편리한 <b>코파카바나 해변</b>을 따라 고급 주택지가, 반대쪽 산비탈에는 파벨라가 있어 <b>주거 지역 분화</b>가 뚜렷합니다. (147쪽)"},
+{u:"c",t:"개념",q:"‘도시화’의 뜻은?",a:"전체 인구 중 도시 인구 비율이 높아지고 도시적 생활 양식이 퍼지는 과정",ex:"전체 인구 중 도시 인구의 비율을 <b>도시화율</b>이라 합니다. 도시화는 보통 산업화와 함께 진행되고, 주민의 경제 활동은 제조업·서비스업 위주로 바뀝니다. (151쪽)"},
+{u:"c",t:"연결",q:"도시화의 단계와 특징을 연결하세요.",en:"(1) 초기 단계\n(2) 가속화 단계\n(3) 종착 단계",a:"(1) 대부분 촌락에 살며 1차 산업 종사, 도시화율 낮음 (2) 산업화·이촌 향도로 도시화율 급상승, 말기에 교외화 (3) 도시화율 80% 이상, 성장 느려짐, 역도시화",ex:"도시화 곡선은 <b>S자</b> 모양입니다. 도시화 단계를 보면 그 나라의 경제 수준을 알 수 있습니다. (151쪽)"},
+{u:"c",t:"개념",q:"우리나라 도시화 과정을 정리해 보세요. 현재는 어느 단계일까요?",a:"1960년대 산업화로 시작 → 1970년대 인구 절반 이상 도시 거주 → 현재 도시화율 약 90%, 종착 단계",ex:"1980년대 이후 도시화 속도가 느려졌습니다. (151쪽)"},
+{u:"c",t:"비교",q:"선진국과 개발 도상국의 도시화 과정을 비교하세요.",a:"선진국: 산업 혁명 이후 200여 년 동안 점진적 / 개발 도상국: 20세기 중반 이후 30~40년 만에 급속",ex:"개발 도상국은 촌락 인구가 도시로 몰리고, 청장년층 중심 이동이라 <b>자연적 증가</b>도 함께 빨랐습니다. 경제 발전 없이 인구가 가장 많은 <b>수위 도시</b>에 지나치게 몰리기도 합니다. 선진국은 지금 도시화 정체나 역도시화가 나타납니다. (152쪽)"},
+{u:"c",t:"선택",q:"<b>개발 도상국</b>의 도시 문제로 가장 알맞은 것은?",opts:["오래된 도심 건물이 낡아 불량 주거 지역이 생긴다","인구 감소로 도시의 활력이 떨어진다","기반 시설이 부족해 무허가 주택과 빈민촌이 생긴다","노숙자 문제가 주로 도심 쇠퇴 때문에 생긴다"],a:"③",ex:"개발 도상국은 기반 시설이 갖춰지기 전에 사람들이 몰려 주택·상하수도가 부족하고 빈민촌, 교통 혼잡, 환경 문제가 심합니다(예: 인도 뭄바이 무허가 주택). ①②④는 <b>선진국</b> 도시 문제입니다. (153쪽)"},
+{u:"c",t:"사례",q:"브라질 쿠리치바가 교통 혼잡을 해결한 방법은?",a:"지하철 대신 기존 도로를 활용한 버스 교통 체계",ex:"급행 버스와 승강대 높이에 맞춘 <b>원통형 정류장</b>, 도로 중앙의 <b>버스 전용 도로</b>를 만들고, 한 번 요금으로 모든 버스에 환승할 수 있게 했습니다. (156쪽)"},
+{u:"c",t:"사례",q:"울산광역시는 오염된 태화강을 어떻게 바꾸었나요?",a:"폐수 차단·하수 처리장 건설·시민 감시와 청소로 생태 하천으로 복원",ex:"1960년대 이후 산업 단지가 생기며 오염됐고, 2000년 물고기 떼죽음을 계기로 시민·환경 단체와 함께 ‘태화강 살리기 사업’을 했습니다. 지금은 생태 공원과 자전거 길이 있는 휴식 공간입니다. (156쪽)"},
+{u:"c",t:"O / X",q:"맞으면 O, 틀리면 X",en:"삶의 질은 경제적 조건만으로 결정되는 객관적인 개념이다.",a:"X",ex:"삶의 질은 경제적 조건뿐 아니라 <b>개인의 행복감</b>과 정치·경제·사회적 조건에 따라 결정되는 <b>주관적</b> 개념입니다. 도시 문제를 해결하려면 지방 자치 단체, 지역 주민, 정부가 함께 참여해야 합니다. (155, 157쪽)"},
+{u:"c",t:"개념",q:"살기 좋은 도시의 조건과, 삶의 질이 높다고 평가받는 도시의 예를 쓰세요.",a:"다양한 경제 활동, 적정 인구, 쾌적한 자연환경, 잘 갖춰진 기반 시설, 높은 사회적 안정성 / 빈·취리히·밴쿠버, 순천·과천",ex:"범죄율이 낮고 교육·의료·문화·행정 서비스가 잘 갖춰진 곳입니다. 순천시는 순천만을 활용한 <b>생태 수도</b> 전략으로 2015 대한민국 도시 대상을 받았습니다. (155, 157쪽)"},
+
+/* ---------- 글로벌 경제 (166~173쪽) ---------- */
+{u:"g",t:"개념",q:"‘경제 활동의 세계화’란?",a:"상품·자본·노동·기술·서비스가 국경을 넘어 자유롭게 이동하며 국가 간 경제적 상호 의존도가 높아지는 현상",ex:"교통과 통신이 발달하면서 생산과 소비가 전 세계를 대상으로 이루어집니다. (167쪽)"},
+{u:"g",t:"개념",q:"‘다국적 기업’이란? 수가 빠르게 늘어난 계기는?",a:"여러 나라에 판매 지사와 생산 공장을 두고 전 세계를 대상으로 생산·판매하는 기업 / 세계 무역 기구(WTO) 출범",ex:"<b>세계 무역 기구(WTO)</b> 출범으로 관세 같은 <b>무역 장벽</b>이 낮아지면서 늘었습니다. 요즘은 농산물, 자원 개발, 유통·금융 서비스까지 활동 범위를 넓히고 있습니다. (167쪽)"},
+{u:"g",t:"순서",q:"다국적 기업의 성장 과정에서 마지막 단계에 들어갈 내용은?",en:"단일 공장이 있는 지역에서 성장\n→ 국내 다른 지역에 공장을 지어 생산 기능 분리\n→ 해외에 판매 지점을 열어 시장 개척\n→ (           )",a:"해외에 생산 공장을 세운다",ex:"작은 회사가 국내 → 해외 판매 → 해외 생산 순서로 커지며 다국적 기업이 됩니다. (167, 169쪽)"},
+{u:"g",t:"연결",q:"다국적 기업의 공간적 분업: 각 기능이 주로 자리 잡는 곳은?",en:"(1) 본사   (2) 연구소   (3) 생산 공장",a:"(1) 정보·자본을 얻기 쉬운 곳(선진국 대도시) (2) 고급 기술 인력이 풍부한 곳 (3) 땅값과 임금이 싼 개발 도상국",ex:"공장은 시장을 넓히려고 수요가 많은 나라로 가거나, 무역 장벽을 피하려고 <b>경제 블록</b> 안으로 들어가기도 합니다. 예: 자동차 회사 연구소는 독일, 생산 공장은 멕시코. (168쪽)"},
+{u:"g",t:"개념",q:"공장이 해외로 빠져나간 지역에서 나타나는 ‘산업 공동화 현상’이란?",a:"지역의 기반 산업이 사라지거나 해외로 옮겨가 산업 기반이 비고 지역 경제가 침체되는 현상",ex:"일자리가 줄고 실업률이 오르며 지역 경제가 어려워집니다. (168쪽)"},
+{u:"g",t:"선택",q:"다국적 기업의 공장이 새로 들어선 지역의 변화로 알맞은 것은?",opts:["산업 공동화, 인구 감소","일자리 확대, 인구 증가","실업률 상승, 지역 경제 침체","관련 산업의 쇠퇴, 인구 감소"],a:"② 일자리 확대, 인구 증가",ex:"새 산업 단지가 생기고 기술을 이전받아 경제가 활기를 띱니다. 다만 비슷한 제품을 만드는 국내 기업이 어려워지거나, 이윤 상당 부분이 본사로 빠져나가는 단점도 있습니다. (168~169쪽)"},
+{u:"g",t:"사례",q:"미국 디트로이트시가 2013년에 파산하게 된 까닭은?",a:"자동차 생산 공장이 멕시코 등 개발 도상국으로 옮겨가 실업률이 높아지고 지역 경제가 침체되었기 때문",ex:"1950년대 자동차 공장들로 인구 160만 명까지 번창했지만, 공장 이전 후 <b>산업 공동화</b>를 겪었습니다. (169쪽)"},
+{u:"g",t:"사례",q:"부산 신발 산업은 어떻게 쇠퇴했고, 어떻게 다시 살아나고 있나요?",a:"1980년대 후반 공장이 인도네시아·베트남·중국 등으로 이전해 쇠퇴 → 2000년대 첨단화·고급화 전략으로 부활",ex:"세계 유명 신발 기업과 협력하고, 생산 자동화로 해외로 떠났던 업체가 부산으로 돌아오는 현상도 나타납니다. (169쪽)"},
+{u:"g",t:"개념",q:"교통과 통신의 발달로 세계화가 빠르게 진행되는 대표적인 서비스업 두 가지는?",a:"유통 서비스(택배업·통신 산업·운수업)와 관광업",ex:"물자와 정보의 이동을 돕는 <b>유통의 세계화</b>, 여가·관광 기회가 늘고 각국이 관광 산업을 키우면서 <b>관광업의 세계화</b>가 진행되고 있습니다. (171쪽)"},
+{u:"g",t:"사례",q:"필리핀이 다국적 기업의 콜센터 지역으로 주목받는 이유 두 가지는?",a:"영어를 공용어로 쓴다 / 인건비가 싸다",ex:"정보 통신 기술 발달로 서비스업이 공간적으로 흩어지면서, 선진국 기업이 업무 일부를 개발 도상국에 맡기는 <b>아웃소싱</b>이 늘었습니다. 콜센터는 전화·온라인으로 일해서 고객 가까이에 있을 필요가 없습니다. (171쪽)"},
+{u:"g",t:"개념",q:"전자 상거래가 발달하면서 나타난 변화로 알맞지 <b>않은</b> 것은?",opts:["택배업 등 유통 산업이 성장했다","공항·고속 도로·항만 근처에 대규모 물류 창고가 생겼다","동네 소규모 서점이 줄어들었다","소비 활동의 범위가 좁아졌다"],a:"④",ex:"전자 상거래는 시간과 공간의 제약이 없어 해외 상점도 쉽게 이용할 수 있습니다. 소비 활동의 범위는 <b>전 세계로 넓어졌습니다</b>. (172쪽)"},
+{u:"g",t:"사례",q:"영화 촬영지가 관광지가 된 사례와, 이처럼 영화·드라마·축제를 직접 경험하는 관광을 무엇이라 하나요?",a:"뉴질랜드 호비튼(반지의 제왕·호빗), 영국 안위크성(해리 포터) / 체험 관광",ex:"관광 산업은 지역 주민의 일자리와 소득을 늘립니다. 그래서 각 나라는 고유한 문화와 자연환경을 살린 관광지를 개발합니다. (173쪽)"}
+];
+
+const stage=document.getElementById('stage'),front=document.getElementById('front'),back=document.getElementById('back');
+const countEl=document.getElementById('count'),barEl=document.getElementById('bar');
+const prevB=document.getElementById('prev'),nextB=document.getElementById('next'),flipB=document.getElementById('flipbtn');
+Q.forEach((q,i)=>q.id=i+1);
+
+let marks={};
+try{marks=JSON.parse(localStorage.getItem('soc3-mid-marks')||'{}')||{}}catch(e){marks={}}
+function saveMarks(){try{localStorage.setItem('soc3-mid-marks',JSON.stringify(marks))}catch(e){}}
+
+let filter='all',list=Q.slice(),idx=0,shuffled=false;
+const lc=u=>({p:'var(--lp)',c:'var(--lc2)',g:'var(--lg)'})[u];
+
+function build(){
+  if(filter==='all')list=Q.slice();
+  else if(filter==='again')list=Q.filter(q=>marks[q.id]==='again');
+  else list=Q.filter(q=>String(q.u)===filter);
+  if(shuffled){for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}}
+  idx=0;render();
+}
+function metaHTML(q){
+  const m=marks[q.id];
+  const done=m==='ok'?'<span class="done ok">✓ 맞음</span>':m==='again'?'<span class="done again">↺ 다시 볼 문제</span>':'';
+  return `<div class="meta"><span class="lesson">${UL[q.u]}</span><span class="tag">${q.t}</span><span>${q.id}번</span>${done}</div>`;
+}
+function fmtA(a){return a.replace(/\s+(?=\([0-9]\)|㉡|㉢)/g,'<br>').replace(/\s\/\s/g,'<br>')}
+function render(){
+  stage.classList.remove('flipped');flipB.textContent='정답 보기';
+  const n=list.length;
+  if(!n){
+    front.style.setProperty('--lc','var(--line)');back.style.setProperty('--lc','var(--line)');
+    front.innerHTML='<div class="empty">다시 볼 문제가 아직 없습니다.<br>카드 뒷면에서 “다시 볼래요”를 누르면 여기에 모입니다.</div>';
+    back.innerHTML='';countEl.innerHTML='<b>0</b> / 0';barEl.style.width='0';
+    prevB.disabled=nextB.disabled=flipB.disabled=true;return;
+  }
+  flipB.disabled=false;
+  const q=list[idx];
+  front.style.setProperty('--lc',lc(q.u));back.style.setProperty('--lc',lc(q.u));
+  const opts=q.opts?`<ol class="opts">${q.opts.map((o,i)=>`<li><span>${'①②③④⑤'[i]}</span>${o}</li>`).join('')}</ol>`:'';
+  const en=q.en?`<div class="en">${q.en}</div>`:'';
+  front.innerHTML=`${metaHTML(q)}<p class="q">${q.q}</p>${en}${opts}<div class="hint">카드를 누르면 정답이 나와요 · 옆으로 밀면 다음 문제</div>`;
+  back.innerHTML=`${metaHTML(q)}<div class="alabel">정답</div><p class="answer">${fmtA(q.a)}</p><p class="ex">${q.ex}</p>
+    <div class="marks"><button class="mark again" id="m-again" data-m="again">↺ 다시 볼래요</button><button class="mark ok" id="m-ok" data-m="ok">✓ 맞았어요</button></div>`;
+  front.scrollTop=0;back.scrollTop=0;
+  countEl.innerHTML=`<b>${idx+1}</b> / ${n}`;
+  barEl.style.width=((idx+1)/n*100)+'%';
+  prevB.disabled=idx===0;nextB.disabled=idx===n-1;
+}
+function flip(){if(!list.length)return;const f=stage.classList.toggle('flipped');flipB.textContent=f?'문제 보기':'정답 보기'}
+function go(d){const j=idx+d;if(j<0||j>=list.length)return;idx=j;render()}
+
+stage.addEventListener('click',e=>{
+  const m=e.target.closest('.mark');
+  if(m){e.stopPropagation();const q=list[idx];marks[q.id]=m.dataset.m;saveMarks();
+    if(filter==='again'&&m.dataset.m==='ok'){const keep=idx;list=Q.filter(x=>marks[x.id]==='again');idx=Math.min(keep,Math.max(list.length-1,0));render();return}
+    if(idx<list.length-1)go(1);else render();return}
+  flip();
+});
+stage.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();flip()}});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+flipB.onclick=flip;prevB.onclick=()=>go(-1);nextB.onclick=()=>go(1);
+
+let sx=0,sy=0;
+stage.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){go(dx<0?1:-1)}},{passive:true});
+
+document.querySelectorAll('.chip[data-f]').forEach(c=>c.onclick=()=>{
+  filter=c.dataset.f;document.querySelectorAll('.chip[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===c));build()});
+document.getElementById('shuffle').onclick=function(){shuffled=!shuffled;this.setAttribute('aria-pressed',shuffled);this.textContent=shuffled?'섞음 ✓':'섞기';build()};
+
+build();
+</script>
+
+</body>
+</html>
